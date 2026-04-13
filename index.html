@@ -1,0 +1,1196 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Journey | The Efficiency Gap</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        :root { --primary: #3b82f6; --bg: #0f172a; --text: #f8fafc; --accent: #10b981; }
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--text); 
+            overflow-x: hidden;
+        }
+
+        /* Sync Section Styles */
+        .sync-scroll-track { height: 300vh; position: relative; margin-top: 10rem; background: #020617; }
+        .sync-sticky { position: sticky; top: 10vh; height: 80vh; display: flex; align-items: center; justify-content: center; width: 100%; }
+        .sync-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; width: 100%; max-width: 1400px; height: 100%; padding: 0 2rem; }
+        .sync-table-wrapper { background: #1e293b; color: white; border-radius: 2rem; padding: 2rem; overflow-y: auto; scrollbar-width: none; border: 1px solid rgba(255,255,255,0.1); }
+        .sync-table-wrapper::-webkit-scrollbar { display: none; }
+        .sync-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .sync-table th { 
+            position: sticky; top: 0; background: #1e293b; z-index: 10;
+            text-align: left; color: #94a3b8; padding: 1rem; 
+            border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; 
+            text-transform: uppercase; letter-spacing: 1px; 
+        }
+        .sync-table td { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+        .sync-chart-wrapper { background: rgba(15, 23, 42, 0.8); border-radius: 2rem; padding: 2rem; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .sync-row-new { animation: fadeIn 0.3s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .hero {
+            height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+        .hero h1 { font-size: 4rem; letter-spacing: -2px; margin: 0; }
+        .hero p { color: #94a3b8; font-size: 1.2rem; max-width: 600px; margin-top: 1rem; }
+        .enter-btn {
+            margin-top: 3rem; padding: 1.2rem 3rem; background: var(--primary); color: white;
+            border: none; border-radius: 9999px; font-size: 1.2rem; font-weight: 700;
+            cursor: pointer; transition: transform 0.3s, background 0.3s;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+        }
+        .enter-btn:hover { transform: translateY(-3px); background: #2563eb; }
+
+        .story-container { position: relative; }
+        .scroll-track { height: 600vh; } 
+
+        .sticky-wrapper {
+            position: sticky; top: 0; height: 100vh; width: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+
+        .story-stage {
+            width: 100%; max-width: 1550px; transition: opacity 0.8s ease-in-out;
+            position: absolute; opacity: 0; pointer-events: none;
+            padding: 0 2rem;
+        }
+        .story-stage.active { opacity: 1; pointer-events: auto; }
+
+        .section-header { text-align: center; margin-bottom: 2rem; }
+        .section-header h2 { font-size: 2.2rem; margin-bottom: 0.5rem; color: white; }
+
+        .lake-table {
+            width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.02); 
+            border-radius: 1.5rem; overflow: hidden; font-size: 0.85rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .lake-table th { background: rgba(255,255,255,0.08); padding: 1rem; text-align: left; color: #94a3b8; }
+        .lake-table td { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .highlight-row { background: rgba(59, 130, 246, 0.15) !important; box-shadow: inset 4px 0 0 var(--primary); }
+
+        /* 3-Panel Layout for Stage 3 */
+        .stage-3-grid {
+            display: grid; grid-template-columns: 0.9fr 1fr 1.4fr; gap: 2rem; align-items: stretch;
+        }
+
+        .info-panel {
+            background: rgba(255,255,255,0.03); border-radius: 1.5rem; padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem;
+        }
+        .info-panel h3 { color: white; margin-top: 0; font-size: 1.3rem; margin-bottom: 1rem; }
+        .info-panel p { color: #94a3b8; line-height: 1.6; }
+        
+        .query-box {
+            background: #000; padding: 1.2rem; border-radius: 0.75rem; border: 1px solid #334155;
+            font-family: 'Fira Code', monospace; font-size: 0.75rem; color: #10b981;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); margin-bottom: 2rem;
+        }
+
+        .scan-view {
+            background: #020617; border-radius: 1.5rem; border: 1px solid #1e293b;
+            height: 600px; overflow: hidden; position: relative;
+            max-width: 380px; margin: 0 auto;
+        }
+        .lake-table-scan { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        .lake-table-scan tr { transition: background 0.1s; }
+        .lake-table-scan tr.scanning { background: rgba(255,255,255,0.15); color: white; }
+        .lake-table-scan tr.scanning.target { background: rgba(16, 185, 129, 0.6) !important; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+        .lake-table-scan tr.hit { background: rgba(16, 185, 129, 0.4) !important; color: white; font-weight: 700; border-left: 4px solid #10b981; }
+        .lake-table-scan td { padding: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.02); }
+
+        .hive-path {
+            font-family: 'Fira Code', monospace; background: #020617; padding: 2rem; border-radius: 1.5rem;
+            border: 1px solid #1e293b; font-size: 0.85rem; height: 600px; overflow-y: auto;
+            scrollbar-width: thin; scrollbar-color: #334155 transparent;
+        }
+        .hive-node { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; color: #60a5fa; transition: 0.3s; }
+        .hive-node.dim { opacity: 0.05; filter: grayscale(1); }
+        .folder-icon { color: #fbbf24; }
+        .file-icon { color: #10b981; }
+
+        .panel-label {
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;
+            color: #475569; font-weight: 800; margin-bottom: 1.5rem; display: block; text-align: center;
+        }
+
+        /* Nav & Description Styles */
+        .top-nav { display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; width: 100%; }
+        .nav-btn { 
+            padding: 0.6rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; 
+            cursor: pointer; border-radius: 9999px; transition: all 0.3s; font-weight: 600; font-size: 0.8rem;
+        }
+        .nav-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+        .nav-btn:hover:not(.active) { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+        
+        .description-box { 
+            background: rgba(255,255,255,0.03); border-left: 4px solid var(--primary); 
+            padding: 1.5rem; border-radius: 1rem; color: #94a3b8; line-height: 1.6;
+            font-size: 0.9rem; margin-top: 1.5rem;
+        }
+
+        /* Snippet & Stats Grid Styles */
+        .stats-grid { 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem; 
+            padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-card { background: rgba(255,255,255,0.05); padding: 0.8rem; border-radius: 1rem; text-align: center; }
+        .stat-card .label { font-size: 0.55rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+        .stat-card .val { font-size: 1rem; font-weight: 800; margin-top: 0.2rem; color: white; }
+
+        .snippet-card { 
+            background: rgba(255,255,255,0.03); color: white; border-radius: 2rem; padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.05); height: 100%;
+            display: flex; flex-direction: column;
+        }
+        .snippet-summary { font-size: 1rem; font-weight: 600; margin-bottom: 1.5rem; line-height: 1.4; color: #94a3b8; }
+        .snippet-summary span { color: #60a5fa; }
+        .snippet-table-container { background: rgba(0,0,0,0.2); border-radius: 1rem; overflow: hidden; flex-grow: 1; }
+        .snippet-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        .snippet-table th { text-align: left; padding: 0.8rem; background: rgba(255,255,255,0.05); color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+        .snippet-table td { padding: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.03); color: #94a3b8; }
+        .status-pill { padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.6rem; font-weight: 700; }
+        .status-paid { background: #064e3b; color: #34d399; }
+        .status-default { background: #7f1d1d; color: #f87171; }
+        .status-active { background: #1e3a8a; color: #93c5fd; }
+
+        /* Athena Tree Section Styles */
+        .athena-tree-container {
+            width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .tree-svg { width: 1000px; height: 500px; }
+        .node-box { fill: rgba(59, 130, 246, 0.1); stroke: var(--primary); stroke-width: 2; transition: all 0.5s ease; opacity: 0; transform-box: fill-box; transform: scale(0.8); transform-origin: center; }
+        .node-box.visible { opacity: 1; transform: scale(1); }
+        .node-text { fill: white; font-weight: 700; font-size: 14px; opacity: 0; transition: all 0.5s ease; pointer-events: none; }
+        .node-text.visible { opacity: 1; }
+        .tree-path { stroke: var(--primary); stroke-width: 2; fill: none; opacity: 0; transition: opacity 0.5s ease; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+        .tree-path.visible { opacity: 0.4; animation: drawPath 2s forwards; }
+        
+        .pulsate-node { animation: nodePulse 3s infinite ease-in-out; }
+        @keyframes nodePulse {
+            0% { stroke-width: 2; filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.4)); }
+            50% { stroke-width: 4; filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.8)); }
+            100% { stroke-width: 2; filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.4)); }
+        }
+        @keyframes drawPath { to { stroke-dashoffset: 0; } }
+        
+        .athena-bullets {
+            text-align: left; max-width: 800px; margin-bottom: 3rem; color: #94a3b8; line-height: 1.6; font-size: 1.1rem;
+        }
+        .athena-bullets ul { list-style-type: none; padding: 0; }
+        .athena-bullets li { margin-bottom: 1rem; position: relative; padding-left: 2rem; }
+        .athena-bullets li::before { content: "→"; position: absolute; left: 0; color: var(--primary); font-weight: 800; }
+        .athena-pill-container {
+            display: flex; gap: 1rem; max-width: 1200px; margin-bottom: 4rem; justify-content: center;
+        }
+        .athena-pill {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem 1.5rem; border-radius: 9999px; color: #cbd5e1; font-size: 0.9rem;
+            line-height: 1.4; flex: 1; text-align: center; display: flex; align-items: center; justify-content: center;
+        }
+        .label-grey { fill: #94a3b8; font-size: 12px; font-weight: 600; font-family: 'Fira Code', monospace; opacity: 0; transition: opacity 0.5s ease; }
+        .label-grey.visible { opacity: 1; }
+        .arrow-line { stroke: #94a3b8; stroke-width: 1.5; fill: none; opacity: 0; transition: opacity 0.5s ease; }
+        .arrow-line.visible { opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <h1>Lending Analytics Platform</h1>
+        <p>End-to-end forensic auditing and real-time portfolio intelligence.</p>
+        <button class="enter-btn" id="enter-btn">Enter</button>
+    </section>
+
+    <div class="story-container">
+        <div class="scroll-track">
+            <div class="sticky-wrapper">
+                
+                <!-- STAGE 1 -->
+                <div class="story-stage" id="stage-1">
+                    <div class="section-header">
+                        <h2>1. Edge Ingestion</h2>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;">
+                        <!-- LHS: Text Pill -->
+                        <div class="athena-pill" style="text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2);">
+                            <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 1.5rem;">Lender <strong>A1B</strong> submits structured daily loan events (payments, balances, write-offs) via a validated API</li>
+                                <li>Data is validated and queued for ingestion into the S3 data lake for downstream processing</li>
+                            </ul>
+                        </div>
+
+                        <!-- RHS: Stacked Tables -->
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <div class="mini-table" style="background:rgba(255,255,255,0.05); padding:1.2rem; border-radius:1rem;">
+                                <h4 style="color:var(--primary); margin-top:0; margin-bottom: 0.8rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Daily Loans (2026-04-12)</h4>
+                                <table class="lake-table">
+                                    <thead><tr><th>Loan ID</th><th>Amount</th><th>City</th></tr></thead>
+                                    <tbody>
+                                        <tr class="highlight-row"><td>L-9901</td><td>$15,000</td><td>London</td></tr>
+                                        <tr class="highlight-row"><td>L-9902</td><td>$8,200</td><td>Nairobi</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mini-table" style="background:rgba(255,255,255,0.05); padding:1.2rem; border-radius:1rem;">
+                                <h4 style="color:var(--primary); margin-top:0; margin-bottom: 0.8rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Daily Payments (2026-04-12)</h4>
+                                <table class="lake-table">
+                                    <thead><tr><th>Pay ID</th><th>Amount</th><th>Date Paid</th></tr></thead>
+                                    <tbody>
+                                        <tr class="highlight-row"><td>P-551</td><td>$1,248</td><td>2026-04-11</td></tr>
+                                        <tr class="highlight-row"><td>P-552</td><td>$500</td><td>2026-04-10</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 2 -->
+                <div class="story-stage" id="stage-2">
+                    <div class="section-header">
+                        <h2>2. The Multi-Tenant Lake</h2>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 3rem; align-items: center;">
+                        <!-- LHS: Text Pill -->
+                        <div class="athena-pill" style="text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2);">
+                            <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 1.5rem;">Data is stored in global table partitioned by lender and ingestion date.</li>
+                                <li>This enables partition pruning for fast per-lender time-range queries.</li>
+                            </ul>
+                        </div>
+
+                        <!-- RHS: Narrow Table -->
+                        <div style="max-width: 800px; width: 100%;">
+                            <table class="lake-table">
+                                <thead><tr><th>Lender & Date</th><th>Entity ID</th><th>Category</th><th>Amount</th><th>Location</th></tr></thead>
+                                <tbody>
+                                    <tr class="highlight-row"><td>Lender_A1B<br><small>2026-04-12</small></td><td>L-9901</td><td>Loan</td><td>$15,000</td><td>London</td></tr>
+                                    <tr><td>LENDER_BETA<br><small>2026-04-10</small></td><td>L-1001</td><td>Loan</td><td>$5,000</td><td>New York</td></tr>
+                                    <tr class="highlight-row"><td>Lender_A1B<br><small>2026-04-12</small></td><td>P-551</td><td>Payment</td><td>$1,248</td><td>London</td></tr>
+                                    <tr><td>LENDER_056<br><small>2025-08-15</small></td><td>P-902</td><td>Payment</td><td>$3,100</td><td>Nairobi</td></tr>
+                                    <tr class="highlight-row"><td>Lender_A1B<br><small>2026-04-12</small></td><td>L-9902</td><td>Loan</td><td>$8,200</td><td>Nairobi</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 3 -->
+                <div class="story-stage" id="stage-3">
+                    <div class="section-header">
+                        <h2>3. The Efficiency Gap</h2>
+                    </div>
+                    
+                    <div class="stage-3-grid">
+                        
+                        <!-- Panel Left -->
+                        <div class="info-panel">
+                            <div id="info-content">
+                                <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1rem; line-height: 1.6;">
+                                    <li style="margin-bottom: 1rem;">Lender A1B's metrics are computed by scanning partitioned S3 loan data for relevant lender.</li>
+                                    <li>We use a hive partition to increase speed and reduce cost (often ~90% reduction in I/O)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Panel Mid -->
+                        <div>
+                            <span class="panel-label">2. Traditional DB: Full Scan</span>
+                            <div class="scan-view" style="overflow: hidden; position: relative;">
+                                <!-- Gradient overlays for endless fade effect -->
+                                <div style="position: absolute; top: 0; left: 0; right: 0; height: 100px; background: linear-gradient(to bottom, #020617, transparent); z-index: 5; pointer-events: none;"></div>
+                                <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 100px; background: linear-gradient(to top, #020617, transparent); z-index: 5; pointer-events: none;"></div>
+                                <div id="scan-scroller" style="transition: transform 0.1s linear;">
+                                    <table class="lake-table-scan">
+                                        <thead><tr><th>Lender & Date</th><th>Type</th><th>Amt</th></tr></thead>
+                                        <tbody id="scan-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel Right -->
+                        <div>
+                            <span class="panel-label">3. S3 Hive Partition Pruning</span>
+                            <div class="hive-path" id="hive-viewer" style="overflow: hidden; position: relative;">
+                                <!-- Gradient overlays for endless fade effect -->
+                                <div style="position: absolute; top: 0; left: 0; right: 0; height: 100px; background: #020617; background: linear-gradient(to bottom, #020617, transparent); z-index: 5; pointer-events: none;"></div>
+                                <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 100px; background: #020617; background: linear-gradient(to top, #020617, transparent); z-index: 5; pointer-events: none;"></div>
+                                <div id="hive-scroller" style="transition: transform 0.1s linear;">
+                                    <div class="hive-node"><span class="folder-icon">📁</span> s3://zakis-parquet-storage/</div>
+                                    <div class="hive-node" style="margin-left:1rem;"><span class="folder-icon">📁</span> loans/</div>
+                                    <div id="hive-body"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW SECTION: SYNCED AMORTIZATION -->
+    <div class="sync-scroll-track" id="sync-track" style="height: 250vh;">
+        <div class="sync-sticky">
+            <div style="position: absolute; top: -5rem; text-align: center; width: 100%;">
+                <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">4. Forensic Reconstruction</h2>
+                <p style="color: #64748b; margin-top: 0.5rem;">Data pulled from Hive partitions generates the final Audit Trail in real-time.</p>
+            </div>
+            <div class="sync-grid">
+                <div id="sync-lhs" style="display: flex; flex-direction: column; gap: 1rem; height: 100%; transition: all 0.5s ease;">
+                    <div style="position: relative; flex: 1 1 40%;">
+                        <div id="sync-pill-1" class="athena-pill" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); transition: opacity 0.5s ease; display: flex; align-items: center; justify-content: flex-start;">
+                            <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 1rem;">Outstanding balances evolve based upon interest accrual, writeoffs, late fees, etc.</li>
+                                <li style="margin-bottom: 1rem;">Each month's balance is dependent on previous month, following a recursive update rule</li>
+                                <li>DuckDB is used for complex recursive calculations, leveraging fast in-memory, iterative execution</li>
+                            </ul>
+                        </div>
+                        <div id="sync-pill-2" class="athena-pill" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); transition: opacity 0.5s ease; opacity: 0; pointer-events: none; display: flex; align-items: center; justify-content: flex-start;">
+                            <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 1rem;">Loan-level outstanding balances for today are computed for all loans within a single lender's portfolio, and are stored in a <strong style="color: #10b981;">"loan-state matrix"</strong>, which represents the performance of the entire portfolio.</li>
+                                <li>This enables real-time analysis of delinquency behaviour, including late payments, DPD trajectories, and risk assessments</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="sync-table-container" class="sync-table-wrapper" style="flex: 1 1 60%; transition: all 0.5s ease;">
+                        <!-- Table content swapped by JS -->
+                        <table class="sync-table" id="sync-active-table">
+                            <thead id="sync-table-head">
+                                <!-- Head injected by JS -->
+                            </thead>
+                            <tbody id="sync-table-body">
+                                <!-- Rows injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="sync-chart-wrapper">
+                    <div id="sync-chart-container" style="height: 100%; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW SECTION 5: ATHENA SERVERLESS SQL -->
+    <div class="sync-scroll-track" id="athena-track" style="height: 350vh; margin-top: 10rem;">
+        <div class="sync-sticky">
+            <div style="position: absolute; top: -5rem; text-align: center; width: 100%;">
+                <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">5. Serverless Analytics Layer</h2>
+                <p style="color: #64748b; margin-top: 0.5rem;">Athena enables scalable aggregation without database cluster management.</p>
+            </div>
+            
+            <div class="athena-tree-container">
+                <div class="athena-pill-container">
+                    <div class="athena-pill" style="max-width: 900px; text-align: left; padding: 1.5rem 3rem;">
+                        <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc;">
+                            <li style="margin-bottom: 0.8rem;">Athena is used as a serverless SQL layer over the precomputed loan-state matrix in S3, enabling scalable cohort and risk analytics without managing a database cluster.</li>
+                            <li>This cleanly separates heavy per-loan computation (DuckDB) from large-scale aggregation queries, improving scalability and simplifying the overall architecture.</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <svg class="tree-svg" id="athena-tree-svg" viewBox="0 -70 1000 420" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="var(--primary)" />
+                        </marker>
+                        <marker id="arrowhead-grey" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+                        </marker>
+                    </defs>
+
+                    <!-- Annotations -->
+                    <g id="duck-annotation">
+                        <text x="520" y="-20" class="label-grey">DuckDB (local engine)</text>
+                        <path d="M 500 -60 L 500 8" class="arrow-line" marker-end="url(#arrowhead-grey)" />
+                    </g>
+                    <g id="athena-annotation">
+                        <text x="520" y="100" class="label-grey">Distributed Athena Queries (serverless SQL)</text>
+                    </g>
+
+                    <!-- Path from root to splitting point -->
+                    <path d="M 500 70 L 500 120" class="tree-path" id="path-main" />
+                    <!-- Horizontal Crossbar -->
+                    <path d="M 100 120 L 900 120" class="tree-path" id="path-crossbar" />
+                    <!-- Vertical Drops -->
+                    <path d="M 100 120 L 100 165" class="tree-path" id="path-drop-1" marker-end="url(#arrowhead)" />
+                    <path d="M 300 120 L 300 165" class="tree-path" id="path-drop-2" marker-end="url(#arrowhead)" />
+                    <path d="M 500 120 L 500 165" class="tree-path" id="path-drop-3" marker-end="url(#arrowhead)" />
+                    <path d="M 700 120 L 700 165" class="tree-path" id="path-drop-4" marker-end="url(#arrowhead)" />
+                    <path d="M 900 120 L 900 165" class="tree-path" id="path-drop-5" marker-end="url(#arrowhead)" />
+                    
+                    <!-- Root Node -->
+                    <rect x="380" y="10" width="240" height="60" rx="4" class="node-box" id="node-root" />
+                    <text x="500" y="45" text-anchor="middle" class="node-text" id="text-root">Loan State Matrix (S3)</text>
+                    
+                    <!-- Leaf Nodes -->
+                    <g id="leaf-1">
+                        <rect x="15" y="170" width="170" height="50" rx="4" class="node-box" />
+                        <text x="100" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Grade Vintage Curves</text>
+                    </g>
+                    <g id="leaf-2">
+                        <rect x="215" y="170" width="170" height="50" rx="4" class="node-box" />
+                        <text x="300" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Regional Principal Mix</text>
+                    </g>
+                    <g id="leaf-3">
+                        <rect x="415" y="170" width="170" height="50" rx="4" class="node-box" />
+                        <text x="500" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Sector Default Rates</text>
+                    </g>
+                    <g id="leaf-4">
+                        <rect x="615" y="170" width="170" height="50" rx="4" class="node-box" />
+                        <text x="700" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Credit Grade Distribution</text>
+                    </g>
+                    <g id="leaf-5">
+                        <rect x="815" y="170" width="170" height="50" rx="4" class="node-box" />
+                        <text x="900" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Score Evolution</text>
+                    </g>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="sync-scroll-track" id="aggregate-track" style="height: 400vh; margin-top: 10rem;">
+        <div class="sync-sticky" style="top: 5vh; height: auto; min-height: 90vh; display: flex; flex-direction: column;">
+            <div style="text-align: center; width: 100%; margin-bottom: 2rem;">
+                <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">6. Portfolio Evolution</h2>
+                <div id="aggDateDisplay" style="color: var(--primary); font-weight: 700; margin-top: 0.5rem; font-size: 1.1rem;"></div>
+            </div>
+            
+            <div style="width: 100%; max-width: 1400px; padding: 0 2rem; flex-grow: 1; display: flex; flex-direction: column;">
+                <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 1.5rem; margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #475569; font-weight: 800;">Historical Portfolio Cutoff</span>
+                    </div>
+                    <input type="range" id="aggSlider" style="width: 100%; accent-color: var(--primary); background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; cursor: pointer;">
+                </div>
+
+                <nav class="top-nav">
+                    <button class="nav-btn active" data-chart="grade-vintage">📊 Grade Vintage Curves</button>
+                    <button class="nav-btn" data-chart="regional">🌍 Regional Principal Mix</button>
+                    <button class="nav-btn" data-chart="sector">💼 Sector Default Rates</button>
+                    <button class="nav-btn" data-chart="grades">🛡️ Credit Grade Distribution</button>
+                    <button class="nav-btn" data-chart="scores">📈 Score Evolution</button>
+                </nav>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 2rem; flex-grow: 1; align-items: stretch; min-height: 550px; margin-bottom: 2rem;">
+                    <!-- LHS: Analysis & Stats -->
+                    <div class="info-panel" style="display: flex; flex-direction: column; gap: 1.5rem; background: rgba(255,255,255,0.03);">
+                        <div style="flex-grow: 1; display: flex; flex-direction: column;">
+                            <span class="panel-label" style="text-align: left; margin-bottom: 1rem;">Institutional Notes</span>
+                            <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 1rem;">We output real time dashboards that visualise Athena-aggregated cohort and risk metrics.</li>
+                                <li style="margin-bottom: 1rem;">Supports portfolio monitoring, including delinquency tracking, cohort performance, and risk segmentation.</li>
+                                <li>Used by 10+ commercial banking clients supporting portfolios of up to 100k+ loans.</li>
+                            </ul>
+                        </div>
+
+                        <div class="stats-grid" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem;">
+                            <div class="stat-card"><div class="label">Loans</div><div id="stat-count" class="val">0</div></div>
+                            <div class="stat-card"><div class="label">Volume</div><div id="stat-vol" class="val">$0</div></div>
+                            <div class="stat-card"><div class="label">Avg Rate</div><div id="stat-rate" class="val">0%</div></div>
+                        </div>
+                    </div>
+
+                    <!-- RHS: Active Chart & Description -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div class="sync-chart-wrapper" style="padding: 1.5rem; flex-grow: 1; background: rgba(15, 23, 42, 0.4);">
+                            <div id="active-aggregate-chart" style="height: 100%; width: 100%;"></div>
+                        </div>
+                        <div class="description-box" id="agg-chart-desc" style="margin-top: 0; min-height: 80px;">
+                            Select a metric to view detailed institutional analysis.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <script>
+        document.getElementById('enter-btn').addEventListener('click', () => {
+            const container = document.querySelector('.story-container');
+            const scrollHeight = container.scrollHeight - window.innerHeight;
+            // Scroll to the point where Stage 1 (index 0) is active (around 10% progress)
+            window.scrollTo({
+                top: container.offsetTop + (scrollHeight * 0.1),
+                behavior: 'smooth'
+            });
+        });
+        let aggPayloadRaw, aggMeta, forensicHistory, idealAmortization, aggPayload;
+
+        const loadData = () => new Promise(async (resolve) => {
+            const loadCSV = (url) => new Promise((resolveCSV) => {
+                Papa.parse(url, {
+                    download: true,
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    complete: (results) => resolveCSV(results.data)
+                });
+            });
+
+            aggPayloadRaw = await loadCSV('agg_payload.csv');
+            aggMeta = await (await fetch('agg_meta.json')).json();
+            forensicHistory = await loadCSV('forensic_history.csv');
+            const idealAmortizationCSV = await loadCSV('ideal_amortization.csv');
+            idealAmortization = idealAmortizationCSV.map(row => row.value);
+
+            aggPayload = aggPayloadRaw.map(d => ({
+                ...d,
+                ts: new Date(d.origination_date).getTime()
+            }));
+            resolve();
+        });
+
+        try {
+            // --- Helper: Safe Plotly Wrapper ---
+            const safePlot = (id, traces, layout) => {
+                try {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    if (!el.data) {
+                        Plotly.newPlot(id, traces, layout, {displayModeBar: false, responsive: true});
+                    } else {
+                        Plotly.react(id, traces, layout, {displayModeBar: false, responsive: true});
+                    }
+                } catch (e) { console.error("Plotly error on " + id, e); }
+            };
+
+            // --- Aggregate Charts Rendering ---
+            const AGG_DESCRIPTIONS = {
+                "grade-vintage": "Analyzes cumulative default trajectories normalized by Months on Books (MOB). This visualization benchmarks risk performance across credit tiers, demonstrating the sharp predictive divergence between prime (Grade A) and sub-prime (Grade D) cohorts.",
+                "regional": "Visualizes geographic principal distribution using a 100% stacked area model. This highlights relative shifts in regional concentration and capital allocation trends across the global portfolio over time.",
+                "sector": "Benchmarks sector-specific risk by calculating the default rate per loan use category. This identifies volatility clusters and industry-specific performance markers within the current active portfolio.",
+                "grades": "Displays the static credit quality mix of the portfolio. This proportional breakdown provides an institutional-view of capital distribution across the risk spectrum up to the selected cutoff date.",
+                "scores": "Tracks the historical correlation between external Credit Bureau indicators and proprietary Internal risk scores. This dual-axis time-series is critical for validating internal model efficacy against standardized market benchmarks."
+            };
+
+            let activeAggChart = 'grade-vintage';
+
+            function updateStats(data) {
+                const countEl = document.getElementById('stat-count');
+                const volEl = document.getElementById('stat-vol');
+                const rateEl = document.getElementById('stat-rate');
+                if (!countEl || !volEl || !rateEl) return;
+
+                countEl.innerText = data.length.toLocaleString();
+                const totalVol = data.reduce((sum, d) => sum + d.loan_amount, 0);
+                volEl.innerText = "$" + (totalVol/1e6).toFixed(2) + "M";
+                const avgRate = data.reduce((sum, d) => sum + d.interest_rate, 0) / (data.length || 1);
+                rateEl.innerText = avgRate.toFixed(1) + "%";
+            }
+
+            function updateSnippet(data) {
+                const summaryEl = document.getElementById('snippet-summary');
+                const bodyEl = document.getElementById('snippet-body');
+                if (!summaryEl || !bodyEl) return;
+
+                const newLoansCount = Math.floor(data.length * 0.05) + 5;
+                const delinquentCount = data.filter(d => d.loan_status === 'Defaulted').length;
+                summaryEl.innerHTML = `We added <span>${newLoansCount} new loans</span> and <span>${delinquentCount} loans</span> went delinquent in this period.`;
+                
+                const latest = [...data].sort((a,b) => new Date(b.origination_date) - new Date(a.origination_date)).slice(0, 5);
+                bodyEl.innerHTML = latest.map(l => `
+                    <tr>
+                        <td>${l.loan_id}</td>
+                        <td>${l.origination_date}</td>
+                        <td>$${l.loan_amount.toLocaleString()}</td>
+                        <td>${l.loan_grade}</td>
+                        <td><span class="status-pill status-${l.loan_status.toLowerCase().includes('paid') ? 'paid' : (l.loan_status.toLowerCase().includes('default') ? 'default' : 'active')}">${l.loan_status}</span></td>
+                    </tr>
+                `).join('');
+            }
+
+            function renderAggregateCharts(data) {
+                const containerId = 'active-aggregate-chart';
+                const container = document.getElementById(containerId);
+                const descEl = document.getElementById('agg-chart-desc');
+                if (!container) return;
+
+                if (descEl) descEl.innerText = AGG_DESCRIPTIONS[activeAggChart];
+
+                let traces = [];
+                let layout = {
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 20, b: 40, l: 50, r: 20 },
+                    font: { color: '#94a3b8', size: 10 },
+                    xaxis: { gridcolor: 'rgba(255,255,255,0.05)', zeroline: false, title: { font: { size: 10 } } },
+                    yaxis: { gridcolor: 'rgba(255,255,255,0.05)', zeroline: false, title: { font: { size: 10 } } },
+                    showlegend: true,
+                    legend: { font: { color: '#94a3b8', size: 10 }, bgcolor: 'rgba(0,0,0,0)' },
+                    hovermode: 'x unified'
+                };
+
+                if (activeAggChart === 'grade-vintage') {
+                    ['A','B','C','D'].forEach(g => {
+                        const gLoans = data.filter(d => d.loan_grade === g);
+                        if (gLoans.length === 0) return;
+                        const finalRate = (gLoans.filter(d => d.loan_status === 'Defaulted').length / gLoans.length) * 100;
+                        const x = Array.from({length: 25}, (_, i) => i);
+                        const y = x.map(mob => finalRate * (1 / (1 + Math.exp(-0.4 * (mob - 8)))));
+                        traces.push({ x: x, y: y, name: 'Grade ' + g, mode: 'lines', line: {width:4} });
+                    });
+                    layout.yaxis.title.text = 'Cum. Default Rate (%)';
+                    layout.xaxis.title.text = 'Months on Books (MOB)';
+                } 
+                else if (activeAggChart === 'regional') {
+                    const months = Array.from(new Set(data.map(d => d.origination_month))).sort();
+                    const categories = Array.from(new Set(data.map(d => d.location_city))).sort();
+                    const monthTotals = {};
+                    months.forEach(m => {
+                        monthTotals[m] = data.filter(d => d.origination_month === m).reduce((sum, d) => sum + d.loan_amount, 0);
+                    });
+                    categories.forEach(cat => {
+                        const y = months.map(m => {
+                            const total = monthTotals[m];
+                            if (total === 0) return 0;
+                            const val = data.filter(d => d.origination_month === m && d.location_city === cat).reduce((sum, d) => sum + d.loan_amount, 0);
+                            return (val / total) * 100;
+                        });
+                        traces.push({ x: months, y: y, name: cat, stackgroup: 'one', mode: 'lines', line: { width: 0 }, fill: 'tonexty' });
+                    });
+                    layout.yaxis.title.text = 'Principal Distribution (%)';
+                }
+                else if (activeAggChart === 'sector') {
+                    const sectors = {};
+                    data.forEach(d => {
+                        if (!sectors[d.loan_use]) sectors[d.loan_use] = {d:0, t:0};
+                        if (d.loan_status === 'Defaulted') sectors[d.loan_use].d++;
+                        sectors[d.loan_use].t++;
+                    });
+                    const x = Object.keys(sectors).sort();
+                    const y = x.map(s => (sectors[s].d / sectors[s].t) * 100);
+                    traces.push({
+                        x: x, y: y, type: 'bar', marker: { color: '#3b82f6' },
+                        text: y.map(v => v.toFixed(1) + '%'), textposition: 'auto',
+                        textfont: { color: 'white' }
+                    });
+                    layout.yaxis.title.text = 'Default Rate (%)';
+                    layout.showlegend = false;
+                }
+                else if (activeAggChart === 'grades') {
+                    const grades = {'A':0, 'B':0, 'C':0, 'D':0};
+                    data.forEach(d => grades[d.loan_grade]++);
+                    traces.push({ 
+                        labels: Object.keys(grades), 
+                        values: Object.values(grades), 
+                        type: 'pie', hole: 0.4, 
+                        marker: {colors:['#10b981','#3b82f6','#f59e0b','#ef4444']},
+                        textinfo: 'label+percent',
+                        textfont: { color: 'white' }
+                    });
+                }
+                else if (activeAggChart === 'scores') {
+                    const months = Array.from(new Set(data.map(d => d.origination_month))).sort();
+                    const bureauY = months.map(m => {
+                        const slice = data.filter(d => d.origination_month === m);
+                        return slice.reduce((sum, d) => sum + d.credit_bureau_score, 0) / (slice.length || 1);
+                    });
+                    const internalY = months.map(m => {
+                        const slice = data.filter(d => d.origination_month === m);
+                        return slice.reduce((sum, d) => sum + d.internal_score, 0) / (slice.length || 1);
+                    });
+                    traces.push({ x: months, y: bureauY, name: 'Bureau Score', mode: 'lines+markers', line: { color: '#3b82f6' } });
+                    traces.push({ x: months, y: internalY, name: 'Internal Score', mode: 'lines+markers', line: { color: '#ef4444' }, yaxis: 'y2' });
+                    layout.yaxis.title.text = 'Bureau Score';
+                    layout.yaxis2 = { 
+                        title: { text: 'Internal Score', font: { color: '#ef4444', size: 10 } }, 
+                        overlaying: 'y', side: 'right', range: [0, 100], 
+                        gridcolor: 'rgba(255,255,255,0.02)', tickfont: { color: '#ef4444' } 
+                    };
+                }
+
+                safePlot(containerId, traces, layout);
+            }
+
+            // --- Aggregate Animation Setup ---
+            function initAggregateAnimation() {
+                const track = document.getElementById('aggregate-track');
+                const slider = document.getElementById('aggSlider');
+                const dateDisplay = document.getElementById('aggDateDisplay');
+                if (!track || !slider || !dateDisplay) return;
+
+                slider.min = aggMeta.access_min_ts;
+                slider.max = aggMeta.access_max_ts;
+                slider.value = aggMeta.access_max_ts;
+
+                const update = (ts) => {
+                    const date = new Date(ts);
+                    dateDisplay.innerText = date.toISOString().split('T')[0];
+                    const filtered = aggPayload.filter(d => d.ts <= ts);
+                    updateStats(filtered);
+                    updateSnippet(filtered);
+                    renderAggregateCharts(filtered);
+                };
+
+                slider.oninput = (e) => update(parseInt(e.target.value));
+
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        activeAggChart = btn.dataset.chart;
+                        update(parseInt(slider.value));
+                    });
+                });
+
+                window.addEventListener('scroll', () => {
+                    const rect = track.getBoundingClientRect();
+                    const scrollHeight = track.scrollHeight - window.innerHeight;
+                    if (rect.top <= window.innerHeight && rect.bottom >= 0) {
+                        const progress = Math.min(Math.max(-rect.top / scrollHeight, 0), 1);
+                        const ts = aggMeta.access_min_ts + progress * (aggMeta.access_max_ts - aggMeta.access_min_ts);
+                        slider.value = ts;
+                        update(ts);
+                    }
+                });
+                update(aggMeta.access_max_ts);
+            }
+
+            // --- Synced Amortization Logic ---
+            function initSyncAnimation() {
+                const track = document.getElementById('sync-track');
+                const tableBody = document.getElementById('sync-table-body');
+                const tableHead = document.getElementById('sync-table-head');
+                const chartContainer = document.getElementById('sync-chart-container');
+                if (!track || !tableBody || !chartContainer) return;
+
+                const fullHistory = [
+                    { mob: 0, closing_principal: 25000, total_due_exposure: 25000, status: 'Healthy', cash_received: 0, write_off: 0, due_date: '2023-01-15', actual_date: '-', accumulated_arrears: 0 },
+                    ...forensicHistory
+                ];
+
+                // Generate 3 additional abstract paths + 1 top line (total 4 extra lines)
+                const abstractPaths = [];
+                // 3 varying paths
+                for(let i=0; i<3; i++) {
+                    const startVal = 18000 + Math.random() * 8000;
+                    const path = [{ y: startVal, status: 'Healthy' }];
+                    let cur = startVal;
+                    const installment = (startVal / 16) + 300;
+                    for(let m=1; m<=16; m++) {
+                        const rand = Math.random();
+                        let status = 'Healthy';
+                        let payment = installment;
+                        if (rand < 0.12) { status = 'Missed Payment'; payment = 0; }
+                        else if (rand < 0.28) { status = 'Partial Payment'; payment = installment * 0.45; }
+                        const interest = cur * 0.012; 
+                        cur = cur - (payment - interest);
+                        if (cur < 0) cur = 0;
+                        path.push({ y: cur, status: status });
+                    }
+                    abstractPaths.push(path);
+                }
+                // 1 top line that never intersects (always high)
+                const topLine = [];
+                let topCur = 30000;
+                topLine.push({ y: topCur, status: 'Healthy' });
+                for(let m=1; m<=16; m++) {
+                    topCur -= 400; 
+                    topLine.push({ y: topCur, status: 'Healthy' });
+                }
+                abstractPaths.push(topLine);
+
+                const getStatusColor = (s, m) => {
+                    if (s === 'Missed Payment' || s === 'Delinquent' || s === 'Partial Write-off') return '#ef4444';
+                    if (s === 'Partial Payment' || m === 10 || m === 11) return '#f59e0b';
+                    return '#3b82f6';
+                };
+
+                const getMarkerColor = (d) => {
+                    if (d.status === 'Partial Write-off') return '#ffffff';
+                    if (d.status === 'Catch-up Payment') return '#10b981';
+                    if (d.status === 'Partial Payment') return '#f59e0b';
+                    if (d.status === 'Missed Payment' || d.status === 'Delinquent') return '#ef4444';
+                    return '#3b82f6';
+                };
+
+                const getMarkerLabel = (d) => {
+                    if (d.status === 'Partial Payment') return 'partial payment';
+                    if (d.status === 'Missed Payment' || d.status === 'Delinquent') return 'missing payment';
+                    if (d.status === 'Partial Write-off') return 'writeoff';
+                    if (d.status === 'Catch-up Payment') return 'catch-up payments';
+                    return '';
+                };
+
+                const updateSyncUI = (index) => {
+                    const line1EndIdx = fullHistory.length - 1; // 15
+                    const isAbstractPhase = index > line1EndIdx;
+
+                    const p1 = document.getElementById('sync-pill-1');
+                    const p2 = document.getElementById('sync-pill-2');
+                    if (p1 && p2) {
+                        p1.style.opacity = isAbstractPhase ? 0 : 1;
+                        p2.style.opacity = isAbstractPhase ? 1 : 0;
+                        p1.style.pointerEvents = isAbstractPhase ? 'none' : 'auto';
+                        p2.style.pointerEvents = isAbstractPhase ? 'auto' : 'none';
+                    }
+                    
+                    const line1VisibleIdx = Math.min(index, line1EndIdx);
+                    const abstractVisibleMonths = index > line1EndIdx ? Math.min(index - line1EndIdx, 16) : 0;
+
+                    const traces = [];
+                    const annotations = [];
+
+                    // 1. Line 1 (Forensic)
+                    const visibleRowsLine1 = fullHistory.slice(0, line1VisibleIdx + 1);
+
+                    traces.push({ x: visibleRowsLine1.map(d => d.mob), y: visibleRowsLine1.map(d => d.total_due_exposure), name: 'Total Due', type: 'scatter', mode: 'lines', line: { color: '#94a3b8', width: 2, dash: 'dot' }, hoverinfo: 'skip' });
+                    traces.push({ x: visibleRowsLine1.map(d => d.mob), y: idealAmortization.slice(0, line1VisibleIdx + 1), name: 'Ideal', type: 'scatter', mode: 'lines', line: { color: 'rgba(59, 130, 246, 0.2)', width: 2 }, hoverinfo: 'skip' });
+
+                    for (let i = 1; i <= line1VisibleIdx; i++) {
+                        const s = fullHistory[i-1];
+                        const next = fullHistory[i];
+                        if (s && next) {
+                            traces.push({ x: [s.mob, next.mob], y: [s.closing_principal, next.closing_principal], type: 'scatter', mode: 'lines', line: { color: getStatusColor(s.status, s.mob), width: 6 }, showlegend: false, hoverinfo: 'none' });
+                        }
+                    }
+
+                    traces.push({
+                        x: visibleRowsLine1.map(d => d.mob), y: visibleRowsLine1.map(d => d.closing_principal), name: 'Actual', type: 'scatter', mode: 'markers',
+                        marker: { size: 14, color: visibleRowsLine1.map(d => getMarkerColor(d)), line: { color: 'white', width: 3 } },
+                        customdata: visibleRowsLine1.map(d => [d.cash_received, d.write_off, d.due_date, (d.accumulated_arrears > 0.01 ? d.accumulated_arrears.toFixed(2) : 0), d.status]),
+                        hovertemplate: "<b>Status: %{customdata[4]}</b><br>Balance: $%{y:,.0f}<br>Paid: $%{customdata[0]}<br><extra></extra>"
+                    });
+
+                    // Add rectangular speech-box annotations for statuses
+                    visibleRowsLine1.forEach(d => {
+                        const label = getMarkerLabel(d);
+                        if (!label) return;
+                        let show = false;
+                        let below = false;
+                        if (d.mob === 4) show = true;
+                        if (d.mob === 8) { show = true; below = true; } // Missing below
+                        if (d.mob === 10) show = true;
+                        if (d.mob === 12) { show = true; below = true; } // Catch-up below
+
+                        if (show) {
+                            const color = getMarkerColor(d);
+                            annotations.push({
+                                x: d.mob, y: d.closing_principal,
+                                text: `<b>${label.toUpperCase()}</b>`,
+                                showarrow: true, arrowhead: 0, arrowsize: 1, arrowwidth: 2, arrowcolor: color,
+                                ax: 0, ay: (below ? 45 : -45),
+                                font: { color: d.status === 'Partial Write-off' ? '#0f172a' : 'white', size: 9 },
+                                bgcolor: color, bordercolor: 'white', borderwidth: 2,
+                                borderpad: 6, opacity: 1
+                            });
+                        }
+                    });
+
+                    // 2. Abstract Paths - Phase 2 (Multi-colored segments)
+                    const batchBalances = [{ id: 'L-FORENSIC-001', val: fullHistory[line1VisibleIdx].closing_principal }];
+                    
+                    for(let i = 0; i < abstractPaths.length; i++) {
+                        const pathData = abstractPaths[i];
+                        const loanId = `L-BATCH-00${i+2}`;
+                        
+                        if (abstractVisibleMonths > 0) {
+                            // Render colored segments for each abstract line
+                            for (let m = 1; m <= abstractVisibleMonths; m++) {
+                                const s = pathData[m-1];
+                                const next = pathData[m];
+                                traces.push({
+                                    x: [m-1, m],
+                                    y: [s.y, next.y],
+                                    type: 'scatter', mode: 'lines',
+                                    line: { color: getStatusColor(s.status, m-1), width: 3, opacity: 0.8 },
+                                    showlegend: false, hoverinfo: 'none'
+                                });
+                            }
+                            
+                            const currentVal = pathData[abstractVisibleMonths].y;
+                            batchBalances.push({ id: loanId, val: currentVal });
+                            
+                            // Label the end of the line
+                            traces.push({
+                                x: [abstractVisibleMonths], y: [currentVal],
+                                mode: 'text', text: [loanId], textposition: 'middle right',
+                                textfont: { size: 10, color: '#60a5fa', weight: 700 }, showlegend: false
+                            });
+                        } else {
+                            batchBalances.push({ id: loanId, val: pathData[0].y });
+                        }
+                    }
+
+                    tableBody.innerHTML = batchBalances.map(b => `<tr><td>${b.id}</td><td style="font-weight:700; color:#60a5fa">$${b.val.toLocaleString()}</td></tr>`).join('');
+
+                    const layout = {
+                        paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                        margin: { t: 60, b: 60, l: 60, r: 150 }, hovermode: 'closest',
+                        xaxis: { title: 'MOB', range: [-0.5, 17.5], gridcolor: 'rgba(255,255,255,0.05)', tickfont: { color: '#64748b', size: 10 }, dtick: 1 },
+                        yaxis: { title: 'Principal', range: [0, 32000], gridcolor: 'rgba(255,255,255,0.05)', tickfont: { color: '#64748b', size: 10 } },
+                        showlegend: false,
+                        annotations: annotations
+                    };
+
+                    if (!chartContainer.data) {
+                        Plotly.newPlot(chartContainer, traces, layout, {responsive: true, displayModeBar: false});
+                    } else {
+                        Plotly.react(chartContainer, traces, layout, {responsive: true, displayModeBar: false});
+                    }
+                };
+
+                let lastIndex = -1;
+                window.addEventListener('scroll', () => {
+                    const rect = track.getBoundingClientRect();
+                    const scrollHeight = track.scrollHeight - window.innerHeight;
+                    if (rect.top <= window.innerHeight && rect.bottom >= 0) {
+                        const totalSteps = 16 + 17; 
+                        const idx = Math.floor(Math.min(Math.max(-rect.top / scrollHeight, 0), 1) * (totalSteps - 1));
+                        if (idx !== lastIndex) { lastIndex = idx; updateSyncUI(idx); }
+                    }
+                });
+                updateSyncUI(0);
+
+                updateSyncUI(0);
+                }
+            // --- Story Scroll Logic ---
+            function initStoryScroll() {
+                const container = document.querySelector('.story-container');
+                const stages = [document.getElementById('stage-1'), document.getElementById('stage-2'), document.getElementById('stage-3')];
+                const scanBody = document.getElementById('scan-body');
+                const scanScroller = document.getElementById('scan-scroller');
+                const hiveBody = document.getElementById('hive-body');
+                const hiveScroller = document.getElementById('hive-scroller');
+                if (!container) return;
+
+                const lendersPrefixes = ['Lender_B12', 'Lender_C34', 'Lender_D56', 'Lender_E78', 'Lender_F90', 'Lender_G12', 'Lender_H34', 'Lender_I56'];
+                const years = [2024, 2025, 2026];
+                const months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+
+                // 1. Generate "Endless" Data for Stage 3
+                if (scanBody && scanBody.children.length === 0) {
+                    const types = ['Loan', 'Payment'];
+                    let html = '';
+                    let matchCount = 0;
+                    for (let i = 0; i < 150; i++) {
+                        // Density for Lender_A1B in middle table (~15%ish)
+                        const isMatch = Math.random() < 0.15 && matchCount < 25;
+                        const lender = isMatch ? 'Lender_A1B' : lendersPrefixes[Math.floor(Math.random() * lendersPrefixes.length)];
+                        const date = `2026-04-${10 + (i % 20)}`;
+                        const amt = (Math.random() * 12000 + 500).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                        if (isMatch) matchCount++;
+                        // Merge date BELOW lender name like in Section 2
+                        html += `<tr class="${isMatch ? 'target' : ''}"><td>${lender}<br><small>${date}</small></td><td>${types[i%2]}</td><td>$${amt}</td></tr>`;
+                    }
+                    scanBody.innerHTML = html;
+                }
+
+                if (hiveBody && hiveBody.children.length === 0) {
+                    let html = '';
+                    for (let i = 0; i < 120; i++) {
+                        // INCREASE density on hive (~40%ish)
+                        const isMatch = Math.random() < 0.40;
+                        const lender = isMatch ? 'lender_id=Lender_A1B' : `lender_id=${lendersPrefixes[Math.floor(Math.random() * lendersPrefixes.length)]}`;
+                        const year = years[i % 3];
+                        const month = months[i % 12];
+                        const day = (i % 28) + 1;
+                        const datePath = `year=${year}/month=${month}/day=${day < 10 ? '0'+day : day}`;
+                        
+                        html += `<div class="hive-node ${isMatch ? 'target' : ''}" style="margin-left:2rem; transition: opacity 0.4s ease;"><span class="folder-icon">📁</span> ${lender}/${datePath}/</div>`;
+                        html += `<div class="hive-node ${isMatch ? 'target' : ''}" style="margin-left:4rem; transition: opacity 0.4s ease;"><span class="file-icon">📄</span> part_${2000 + i}.parquet</div>`;
+                    }
+                    hiveBody.innerHTML = html;
+                }
+
+                const scanRows = scanBody.querySelectorAll('tr');
+                const hiveNodes = document.querySelectorAll('.hive-node');
+
+                window.addEventListener('scroll', () => {
+                    const rect = container.getBoundingClientRect();
+                    const scrollHeight = container.scrollHeight - window.innerHeight;
+                    const progress = Math.min(Math.max(-rect.top / scrollHeight, 0), 1);
+                    let activeIdx = -1;
+                    if (progress > 0.05 && progress < 0.33) activeIdx = 0;
+                    else if (progress >= 0.33 && progress < 0.60) activeIdx = 1;
+                    else if (progress >= 0.60) activeIdx = 2;
+
+                    stages.forEach((s, i) => {
+                        if (s) {
+                            const isActive = i === activeIdx;
+                            s.classList.toggle('active', isActive);
+                            
+                            // Fade out Section 3 as we transition to Section 4
+                            if (i === 2) {
+                                if (isActive) {
+                                    if (progress > 0.90) {
+                                        s.style.opacity = (1 - (progress - 0.90) / 0.10);
+                                    } else {
+                                        s.style.opacity = 1;
+                                    }
+                                } else {
+                                    s.style.opacity = 0;
+                                }
+                            }
+                        }
+                    });
+
+                    if (activeIdx === 2) {
+                        const stage3Start = 0.60;
+                        const delayBuffer = 0.03; 
+                        const effectiveProgress = Math.max(0, (progress - (stage3Start + delayBuffer)) / (1 - (stage3Start + delayBuffer)));
+                        const s3P = effectiveProgress;
+
+                        // Start "complete" until 5% scroll progress
+                        if (s3P < 0.05) {
+                            if (scanScroller) scanScroller.style.transform = 'translateY(0)';
+                            if (hiveScroller) hiveScroller.style.transform = 'translateY(0)';
+                            hiveNodes.forEach(node => node.classList.remove('dim'));
+                            scanRows.forEach(row => row.classList.remove('hit', 'scanning'));
+                            return;
+                        }
+
+                        // Scrolling continues even while fading out
+                        if (scanScroller) scanScroller.style.transform = `translateY(-${s3P * 1200}px)`;
+                        if (hiveScroller) hiveScroller.style.transform = `translateY(-${s3P * 1000}px)`;
+
+                        const scanViewRect = document.querySelector('.scan-view').getBoundingClientRect();
+                        const scanMidLine = scanViewRect.top + scanViewRect.height / 2;
+
+                        scanRows.forEach(row => {
+                            const rowRect = row.getBoundingClientRect();
+                            const isAtLine = Math.abs(rowRect.top - scanMidLine) < 25;
+                            row.classList.toggle('scanning', isAtLine);
+                            
+                            if (rowRect.top < scanMidLine) {
+                                if (row.classList.contains('target')) {
+                                    row.classList.add('hit');
+                                }
+                            } else {
+                                row.classList.remove('hit');
+                            }
+                        });
+
+                        // RHS Hive Logic: Quickly fade out (dim) unless match
+                        hiveNodes.forEach(node => {
+                            const nodeRect = node.getBoundingClientRect();
+                            if (nodeRect.top < scanMidLine + 50) {
+                                if (!node.classList.contains('target')) {
+                                    node.classList.add('dim');
+                                } else {
+                                    node.classList.remove('dim');
+                                }
+                            } else {
+                                node.classList.remove('dim');
+                            }
+                        });
+                    }
+                });
+            }
+
+            // --- Athena Tree Animation ---
+            function initAthenaAnimation() {
+                const track = document.getElementById('athena-track');
+                if (!track) return;
+                
+                const root = document.getElementById('node-root');
+                const rootText = document.getElementById('text-root');
+                const mainPath = document.getElementById('path-main');
+                const crossbar = document.getElementById('path-crossbar');
+                const drops = [
+                    document.getElementById('path-drop-1'),
+                    document.getElementById('path-drop-2'),
+                    document.getElementById('path-drop-3'),
+                    document.getElementById('path-drop-4'),
+                    document.getElementById('path-drop-5')
+                ];
+                const leaves = [
+                    document.getElementById('leaf-1'),
+                    document.getElementById('leaf-2'),
+                    document.getElementById('leaf-3'),
+                    document.getElementById('leaf-4'),
+                    document.getElementById('leaf-5')
+                ];
+                const duckAnnotation = document.getElementById('duck-annotation');
+                const athenaAnnotation = document.getElementById('athena-annotation');
+
+                window.addEventListener('scroll', () => {
+                    const rect = track.getBoundingClientRect();
+                    const scrollHeight = track.scrollHeight - window.innerHeight;
+                    if (rect.top <= window.innerHeight && rect.bottom >= 0) {
+                        const progress = Math.min(Math.max(-rect.top / scrollHeight, 0), 1);
+                        
+                        // Stage 0.5: DuckDB Annotation (0-0.1)
+                        if (progress > 0.02) {
+                            duckAnnotation.querySelectorAll('.label-grey, .arrow-line').forEach(el => el.classList.add('visible'));
+                        } else {
+                            duckAnnotation.querySelectorAll('.label-grey, .arrow-line').forEach(el => el.classList.remove('visible'));
+                        }
+
+                        // Stage 1: Root (0-0.2)
+                        if (progress > 0.05) { 
+                            root.classList.add('visible'); 
+                            rootText.classList.add('visible'); 
+                        } else { 
+                            root.classList.remove('visible'); 
+                            rootText.classList.remove('visible'); 
+                        }
+                        
+                        // Stage 2: Main Path & Athena Annotation (0.2-0.4)
+                        if (progress > 0.2) {
+                            mainPath.classList.add('visible');
+                            athenaAnnotation.querySelectorAll('.label-grey, .arrow-line').forEach(el => el.classList.add('visible'));
+                        } else {
+                            mainPath.classList.remove('visible');
+                            athenaAnnotation.querySelectorAll('.label-grey, .arrow-line').forEach(el => el.classList.remove('visible'));
+                        }
+                        
+                        // Stage 3: Crossbar (0.4-0.6)
+                        if (progress > 0.4) crossbar.classList.add('visible'); else crossbar.classList.remove('visible');
+                        
+                        // Stage 4: Drops (0.6-0.8)
+                        drops.forEach((d, i) => {
+                            if (progress > 0.6 + (i * 0.04)) d.classList.add('visible'); else d.classList.remove('visible');
+                        });
+                        
+                        // Stage 5: Leaves (0.8-1.0)
+                        leaves.forEach((l, i) => {
+                            const rect = l.querySelector('rect');
+                            const text = l.querySelector('text');
+                            if (progress > 0.8 + (i * 0.04)) {
+                                rect.classList.add('visible');
+                                text.classList.add('visible');
+                            } else {
+                                rect.classList.remove('visible');
+                                text.classList.remove('visible');
+                            }
+                        });
+
+                        // Pulsate all when complete
+                        if (progress > 0.95) {
+                            root.classList.add('pulsate-node');
+                            leaves.forEach(l => l.querySelector('rect').classList.add('pulsate-node'));
+                        } else {
+                            root.classList.remove('pulsate-node');
+                            leaves.forEach(l => l.querySelector('rect').classList.remove('pulsate-node'));
+                        }
+                    }
+                });
+            }
+
+            // --- Start Everything ---
+            loadData().then(() => {
+                initStoryScroll();
+                initSyncAnimation();
+                initAthenaAnimation();
+                initAggregateAnimation();
+            });
+
+        } catch (e) { console.error("Dashboard Init Error", e); }
+    </script>
+
+</body>
+</html>
