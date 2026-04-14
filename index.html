@@ -793,8 +793,13 @@
                     // 1. Line 1 (Forensic)
                     const visibleRowsLine1 = fullHistory.slice(0, line1VisibleIdx + 1);
 
-                    traces.push({ x: visibleRowsLine1.map(d => d.mob), y: visibleRowsLine1.map(d => d.total_due_exposure), name: 'Total Due', type: 'scatter', mode: 'lines', line: { color: '#94a3b8', width: 2, dash: 'dot' }, hoverinfo: 'skip' });
-                    traces.push({ x: visibleRowsLine1.map(d => d.mob), y: idealAmortization.slice(0, line1VisibleIdx + 1), name: 'Ideal', type: 'scatter', mode: 'lines', line: { color: 'rgba(59, 130, 246, 0.2)', width: 2 }, hoverinfo: 'skip' });
+                    // --- Legend Dummy Traces ---
+                    traces.push({ x: [null], y: [null], name: 'Total Due (incl. interest)', type: 'scatter', mode: 'lines', line: { color: '#94a3b8', width: 2, dash: 'dot' }, showlegend: true });
+                    traces.push({ x: [null], y: [null], name: 'Partial Payment', type: 'scatter', mode: 'lines', line: { color: '#f59e0b', width: 6 }, showlegend: true });
+                    traces.push({ x: [null], y: [null], name: 'Missing Payment', type: 'scatter', mode: 'lines', line: { color: '#ef4444', width: 6 }, showlegend: true });
+
+                    traces.push({ x: visibleRowsLine1.map(d => d.mob), y: visibleRowsLine1.map(d => d.total_due_exposure), name: 'Total Due', type: 'scatter', mode: 'lines', line: { color: '#94a3b8', width: 2, dash: 'dot' }, showlegend: false, hoverinfo: 'skip' });
+                    traces.push({ x: visibleRowsLine1.map(d => d.mob), y: idealAmortization.slice(0, line1VisibleIdx + 1), name: 'Ideal', type: 'scatter', mode: 'lines', line: { color: 'rgba(59, 130, 246, 0.2)', width: 2 }, showlegend: false, hoverinfo: 'skip' });
 
                     for (let i = 1; i <= line1VisibleIdx; i++) {
                         const s = fullHistory[i-1];
@@ -807,6 +812,7 @@
                     traces.push({
                         x: visibleRowsLine1.map(d => d.mob), y: visibleRowsLine1.map(d => d.closing_principal), name: 'Actual', type: 'scatter', mode: 'markers',
                         marker: { size: 14, color: visibleRowsLine1.map(d => getMarkerColor(d)), line: { color: 'white', width: 3 } },
+                        showlegend: false,
                         customdata: visibleRowsLine1.map(d => [d.cash_received, d.write_off, d.due_date, (d.accumulated_arrears > 0.01 ? d.accumulated_arrears.toFixed(2) : 0), d.status]),
                         hovertemplate: "<b>Status: %{customdata[4]}</b><br>Balance: $%{y:,.0f}<br>Paid: $%{customdata[0]}<br><extra></extra>"
                     });
@@ -878,7 +884,15 @@
                         margin: { t: 60, b: 60, l: 60, r: 150 }, hovermode: 'closest',
                         xaxis: { title: 'MOB', range: [-0.5, 17.5], gridcolor: 'rgba(255,255,255,0.05)', tickfont: { color: '#64748b', size: 10 }, dtick: 1 },
                         yaxis: { title: 'Principal', range: [0, 32000], gridcolor: 'rgba(255,255,255,0.05)', tickfont: { color: '#64748b', size: 10 } },
-                        showlegend: false,
+                        showlegend: true,
+                        legend: {
+                            font: { color: '#94a3b8', size: 10 },
+                            bgcolor: 'rgba(15, 23, 42, 0.8)',
+                            bordercolor: 'rgba(255,255,255,0.1)',
+                            borderwidth: 1,
+                            x: 1.05,
+                            y: 1
+                        },
                         annotations: annotations
                     };
 
