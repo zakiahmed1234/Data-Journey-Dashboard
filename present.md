@@ -81,15 +81,6 @@ data is silod off!!!
 
 (add more data to table, maybe put arrows showing our privlidged lender, change name)
 
-
-3) Pruning files
-
-Lender A1B's metrics are computed by scanning partitioned S3 loan data for relevant lender.
-
-We use a hive partition to store our data, allowing us to quickly select entire files instead of running through the table
-
-This increases speed and reduces cost (often ~90% reduction in I/O).
-
 4) Performing Amortization calculations
 
 - Outstanding balances evolve based upon interest accrual, writeoffs, late fees, etc.
