@@ -407,21 +407,21 @@
     </div>
 
     <div class="sync-scroll-track" id="aggregate-track" style="height: 400vh; margin-top: 10rem;">
-        <div class="sync-sticky" style="top: 5vh; height: auto; min-height: 90vh; display: flex; flex-direction: column;">
-            <div style="text-align: center; width: 100%; margin-bottom: 2rem;">
-                <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">5. Portfolio Evolution</h2>
-                <div id="aggDateDisplay" style="color: var(--primary); font-weight: 700; margin-top: 0.5rem; font-size: 1.1rem;"></div>
+        <div class="sync-sticky" style="top: 2vh; height: auto; min-height: 96vh; display: flex; flex-direction: column;">
+            <div style="text-align: center; width: 100%; margin-bottom: 1rem;">
+                <h2 style="color: white; font-size: 2.2rem; letter-spacing: -2px; margin: 0;">5. Portfolio Evolution</h2>
+                <div id="aggDateDisplay" style="color: var(--primary); font-weight: 700; margin-top: 0.2rem; font-size: 1rem;"></div>
             </div>
             
             <div style="width: 100%; max-width: 1400px; padding: 0 2rem; flex-grow: 1; display: flex; flex-direction: column;">
-                <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 1.5rem; margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.05);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 1.5rem; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                         <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #475569; font-weight: 800;">Historical Portfolio Cutoff</span>
                     </div>
                     <input type="range" id="aggSlider" style="width: 100%; accent-color: var(--primary); background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; cursor: pointer;">
                 </div>
 
-                <nav class="top-nav">
+                <nav class="top-nav" style="margin-bottom: 1rem;">
                     <button class="nav-btn active" data-chart="grade-vintage">📊 Grade Vintage Curves</button>
                     <button class="nav-btn" data-chart="regional">🌍 Regional Principal Mix</button>
                     <button class="nav-btn" data-chart="sector">💼 Sector Default Rates</button>
@@ -429,19 +429,19 @@
                     <button class="nav-btn" data-chart="scores">📈 Score Evolution</button>
                 </nav>
 
-                <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 2rem; flex-grow: 1; align-items: stretch; min-height: 550px; margin-bottom: 2rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 1.5rem; flex-grow: 1; align-items: stretch; min-height: 450px; margin-bottom: 1rem;">
                     <!-- LHS: Analysis & Stats -->
-                    <div class="info-panel" style="display: flex; flex-direction: column; gap: 1.5rem; background: rgba(255,255,255,0.03);">
+                    <div class="info-panel" style="display: flex; flex-direction: column; gap: 1rem; background: rgba(255,255,255,0.03); padding: 1.5rem;">
                         <div style="flex-grow: 1; display: flex; flex-direction: column;">
-                            <span class="panel-label" style="text-align: left; margin-bottom: 1rem;">Institutional Notes</span>
-                            <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
-                                <li style="margin-bottom: 1rem;">We output real time dashboards that visualise Athena-aggregated cohort and risk metrics.</li>
-                                <li style="margin-bottom: 1rem;">Supports portfolio monitoring, including delinquency tracking, cohort performance, and risk segmentation.</li>
-                                <li>Used by 10+ commercial banking clients supporting portfolios of up to 100k+ loans.</li>
+                            <span class="panel-label" style="text-align: left; margin-bottom: 0.8rem;">Institutional Notes</span>
+                            <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1rem; line-height: 1.5;">
+                                <li style="margin-bottom: 0.5rem;">We output real time dashboards that visualise Athena-aggregated cohort and risk metrics.</li>
+                                <li style="margin-bottom: 0.5rem;">Supports portfolio monitoring, including delinquency tracking and cohort performance.</li>
+                                <li>Used by 10+ commercial banking clients supporting 100k+ loans.</li>
                             </ul>
                         </div>
 
-                        <div class="stats-grid" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem;">
+                        <div class="stats-grid" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
                             <div class="stat-card"><div class="label">Loans</div><div id="stat-count" class="val">0</div></div>
                             <div class="stat-card"><div class="label">Volume</div><div id="stat-vol" class="val">$0</div></div>
                             <div class="stat-card"><div class="label">Avg Rate</div><div id="stat-rate" class="val">0%</div></div>
@@ -449,11 +449,11 @@
                     </div>
 
                     <!-- RHS: Active Chart & Description -->
-                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                        <div class="sync-chart-wrapper" style="padding: 1.5rem; flex-grow: 1; background: rgba(15, 23, 42, 0.4);">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="sync-chart-wrapper" style="padding: 1rem; flex-grow: 1; background: rgba(15, 23, 42, 0.4);">
                             <div id="active-aggregate-chart" style="height: 100%; width: 100%;"></div>
                         </div>
-                        <div class="description-box" id="agg-chart-desc" style="margin-top: 0; min-height: 80px;">
+                        <div class="description-box" id="agg-chart-desc" style="margin-top: 0; min-height: 60px; padding: 1rem; font-size: 0.85rem;">
                             Select a metric to view detailed institutional analysis.
                         </div>
                     </div>
