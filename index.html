@@ -66,6 +66,12 @@
 
         .section-header { text-align: center; margin-bottom: 2rem; }
         .section-header h2 { font-size: 2.2rem; margin-bottom: 0.5rem; color: white; }
+        .section-subtitle { color: #94a3b8; font-size: 1.1rem; margin-top: 0.5rem; margin-bottom: 2rem; font-weight: 500; letter-spacing: 0.5px; }
+
+        .hero-socials { display: flex; gap: 1.5rem; margin-top: 2rem; }
+        .hero-socials a { color: #94a3b8; transition: color 0.3s; }
+        .hero-socials a:hover { color: var(--primary); }
+        .hero-socials svg { width: 24px; height: 24px; fill: currentColor; }
 
         .lake-table {
             width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.02); 
@@ -137,7 +143,7 @@
         }
         .athena-pill {
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            padding: 1rem 1.5rem; border-radius: 9999px; color: #cbd5e1; font-size: 0.9rem;
+            padding: 1rem 1.5rem; border-radius: 9999px; color: #f1f5f9; font-size: 0.9rem;
             line-height: 1.4; flex: 1; text-align: center; display: flex; align-items: center; justify-content: center;
         }
         .label-grey { fill: #94a3b8; font-size: 12px; font-weight: 600; font-family: 'Fira Code', monospace; opacity: 0; transition: opacity 0.5s ease; }
@@ -151,6 +157,17 @@
     <section class="hero">
         <h1>Lending Analytics Platform</h1>
         <p>End-to-end forensic auditing and real-time portfolio intelligence.</p>
+        <div class="hero-socials">
+            <a href="https://linkedin.com" target="_blank" title="LinkedIn">
+                <svg viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            </a>
+            <a href="https://github.com" target="_blank" title="GitHub">
+                <svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            </a>
+            <a href="mailto:contact@example.com" title="Email">
+                <svg viewBox="0 0 24 24"><path d="M0 3v18h24v-18h-24zm6.623 7.929l-4.623 5.712v-9.458l4.623 3.746zm-4.141-5.929h19.035l-9.517 7.713-9.518-7.713zm5.694 7.188l3.824 3.099 3.83-3.104 5.612 8.818h-18.738l5.472-8.813zm9.201-1.259l4.623-3.746v9.458l-4.623-5.712z"/></svg>
+            </a>
+        </div>
         <button class="enter-btn" id="enter-btn">Enter</button>
     </section>
 
@@ -162,11 +179,12 @@
                 <div class="story-stage" id="stage-1">
                     <div class="section-header">
                         <h2>1. Data Ingestion Layer</h2>
+                        <div class="section-subtitle">Input daily data</div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; width: 100%;">
                         <!-- LHS: Text Pill -->
                         <div class="athena-pill" style="text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2);">
-                            <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
+                            <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #cbd5e1; font-size: 1.1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 1.5rem;">Lender <strong>A1B</strong> submits structured daily loan events (payments, balances, write-offs) via a validated API</li>
                                 <li>Data is validated and queued for ingestion into the S3 data lake for downstream processing</li>
                             </ul>
@@ -202,11 +220,12 @@
                 <div class="story-stage" id="stage-2">
                     <div class="section-header">
                         <h2>2. The Multi-Tenant Data Lake</h2>
+                        <div class="section-subtitle">Secure, scalable data storage</div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 3rem; align-items: center; width: 100%;">
                         <!-- LHS: Text Pill -->
                         <div class="athena-pill" style="text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2);">
-                            <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
+                            <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #cbd5e1; font-size: 1.1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 1.5rem;">Data is logically grouped by lender, but physically stored as distributed Parquet files in S3.</li>
                                 <li>This enables partition pruning, so only relevant data partitions are read for a given lender or time range.</li>
                             </ul>
@@ -230,21 +249,22 @@
 
                 <!-- STAGE 3 -->
                 <div class="story-stage" id="stage-3">
-                    <div style="text-align: center; width: 100%; margin-bottom: 2rem;">
-                        <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">3. Loan State Engine</h2>
+                    <div class="section-header">
+                        <h2>3. Loan State Engine</h2>
+                        <div class="section-subtitle">Calculating loan performance</div>
                     </div>
                     <div class="sync-grid">
                         <div id="sync-lhs" style="display: flex; flex-direction: column; gap: 1rem; height: 100%; transition: all 0.5s ease;">
                             <div style="position: relative; flex: 1 1 40%;">
                                 <div id="sync-pill-1" class="athena-pill" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); transition: opacity 0.5s ease; display: flex; align-items: center; justify-content: flex-start;">
-                                    <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
+                                    <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #cbd5e1; font-size: 1.1rem; line-height: 1.6;">
                                         <li style="margin-bottom: 1rem;">Outstanding balances evolve based upon interest accrual, writeoffs, late fees, etc.</li>
                                         <li style="margin-bottom: 1rem;">Calculating monthly change in balance requires complex recursive computations based on previous months.</li>
                                         <li>We leverage DuckDB's fast in-memory and iterative execution to provide speedy and reliable calculations</li>
                                     </ul>
                                 </div>
                                 <div id="sync-pill-2" class="athena-pill" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); transition: opacity 0.5s ease; opacity: 0; pointer-events: none; display: flex; align-items: center; justify-content: flex-start;">
-                                    <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
+                                    <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #cbd5e1; font-size: 1.1rem; line-height: 1.6;">
                                         <li style="margin-bottom: 1rem;">Each computed loan-state is materialised into a <strong>"loan-state table"</strong>, representing a full snapshot of portfolio performance at a given point in time.</li>
                                         <li>This enables real-time analysis of delinquency behaviour, including late payments, DPD trajectories, and risk assessments</li>
                                     </ul>
@@ -265,13 +285,14 @@
 
                 <!-- STAGE 4 -->
                 <div class="story-stage" id="stage-4">
-                    <div style="text-align: center; width: 100%; margin-bottom: 2rem;">
-                        <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">4. Serverless Analytics Layer</h2>
+                    <div class="section-header">
+                        <h2>4. Serverless Analytics Layer</h2>
+                        <div class="section-subtitle">Computing statistical aggregations</div>
                     </div>
                     <div class="athena-tree-container">
                         <div class="athena-pill-container">
                             <div class="athena-pill" style="max-width: 900px; text-align: left; padding: 1.5rem 3rem;">
-                                <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc;">
+                                <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #cbd5e1;">
                                     <li style="margin-bottom: 0.8rem;">Athena is used as a serverless SQL layer over the precomputed loan-state table in S3, enabling scalable cohort and risk analytics without managing a database cluster.</li>
                                     <li>This cleanly separates heavy per-loan computation (DuckDB) from large-scale aggregation queries, improving scalability and simplifying the overall architecture.</li>
                                 </ul>
@@ -329,9 +350,10 @@
 
                 <!-- STAGE 5 -->
                 <div class="story-stage" id="stage-5">
-                    <div style="text-align: center; width: 100%; margin-bottom: 1rem;">
-                        <h2 style="color: white; font-size: 2.2rem; letter-spacing: -2px; margin: 0;">5. Portfolio Evolution</h2>
-                        <div id="aggDateDisplay" style="color: var(--primary); font-weight: 700; margin-top: 0.2rem; font-size: 1rem;"></div>
+                    <div class="section-header">
+                        <h2>5. Portfolio Evolution</h2>
+                        <div class="section-subtitle">Real-time metrics</div>
+                        <div id="aggDateDisplay" style="color: var(--primary); font-weight: 700; margin-top: -1.5rem; margin-bottom: 2rem; font-size: 1rem;"></div>
                     </div>
                     <div style="width: 100%; max-width: 1400px; padding: 0 2rem; flex-grow: 1; display: flex; flex-direction: column;">
                         <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 1.5rem; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.05);">
@@ -351,7 +373,7 @@
                             <div class="info-panel" style="display: flex; flex-direction: column; gap: 1rem; background: rgba(255,255,255,0.03); padding: 1.5rem;">
                                 <div style="flex-grow: 1; display: flex; flex-direction: column;">
                                     <span class="panel-label" style="text-align: left; margin-bottom: 0.8rem;">Institutional Notes</span>
-                                    <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1rem; line-height: 1.5;">
+                                    <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #cbd5e1; font-size: 1rem; line-height: 1.5;">
                                         <li style="margin-bottom: 0.5rem;">We output real time dashboards that visualise Athena-aggregated cohort and risk metrics.</li>
                                         <li style="margin-bottom: 0.5rem;">Supports portfolio monitoring, including delinquency tracking and cohort performance.</li>
                                         <li>Used by 10+ commercial banking clients supporting 100k+ loans.</li>
