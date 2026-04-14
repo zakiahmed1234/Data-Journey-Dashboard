@@ -1,134 +1,124 @@
-# Data Journey | Detailed Technical Specification & Content Ledger
+# Data Journey | Master Design Document & Verbatim Content Ledger
 
-This document provides an exhaustive technical and narrative breakdown of the Data Journey dashboard, detailing every UI component, transition logic, and analytical metric with 100% precise text content.
+This document serves as the absolute source of truth for the Data Journey dashboard. It describes every visual component, technical implementation detail, and contains the exact verbatim text used throughout the application.
 
 ---
 
-## Global Architectural Constants
-- **Typography:** `Inter` (sans-serif) for general UI; `Fira Code` (monospace) for data paths and technical annotations.
+## 1. Global Design System & Core Architecture
+
+### Visual Identity
+- **Typography:** 
+  - `Inter`: Primary sans-serif for headers, UI, and body text.
+  - `Fira Code`: Monospace for technical labels, data paths, and annotations.
 - **Color Palette:**
-  - `Primary`: `#3b82f6` (Blue)
-  - `Background`: `#0f172a` (Deep Navy)
-  - `Text`: `#f8fafc` (Off-white)
-  - `Accent`: `#10b981` (Emerald Green)
-  - `Alert/Warning`: `#ef4444` (Red) / `#f59e0b` (Amber)
-- **Global Layout:** All content is wrapped in a `story-container` with a `scroll-track` of `600vh` to drive scroll-linked animations.
+  - `Primary (Blue)`: `#3b82f6` - Used for active states, dots, and highlights.
+  - `Background (Deep Navy)`: `#0f172a` - Primary background.
+  - `Section Background (Black)`: `#020617` - Contrast background for Stages 3 and 4.
+  - `Text (Main)`: `#f8fafc` - High-contrast off-white.
+  - `Text (Subtle)`: `#94a3b8` - Medium grey for subtitles and descriptions.
+  - `Text (Muted)`: `#64748b` - Dimmed grey for inactive progress labels.
+  - `Emerald`: `#10b981` - Used for Stage 2 highlights and success states.
+
+### Layout & Interaction Model
+- **Presentation Mode:** Unified `1000vh` scroll-track driving a sequence of 5 stages.
+- **Sticky Stage Engine:** All stages are contained within a single `position: sticky` wrapper.
+- **Fade Logic:** Stages are `position: absolute` and utilize `transition: opacity 0.8s ease-in-out`. Only the active stage has `opacity: 1`.
+- **Progress Navigator:** A fixed vertical bar on the right side (`right: 2rem`) containing dots and labels for all sections.
+  - **Inactive State:** Labels are `#64748b` (dimmed grey).
+  - **Active State:** Label highlights in bold white; Dot scales to `1.8x` with a primary blue shadow.
+  - **Context-Aware:** Hidden on the Hero page; fades in upon entering the story container.
 
 ---
 
-## 0. Hero Entry
-**Visuals:**
-- Full-viewport (`100vh`) radial gradient background (`#1e293b` to `#0f172a`).
-- Centralized typography: `h1` at `4rem` with `-2px` letter spacing.
-- **Interaction:** "Enter" button (`enter-btn`) with `0.3s` transform transition and blue box-shadow.
-- **Transition Logic:** Clicking "Enter" triggers a smooth programmatic scroll to `10%` of the `story-container`'s scroll height, centering Stage 1.
+## 2. Hero Section (The Entry Point)
 
-**Precise Text Content:**
-- **Title:** `Lending Analytics Platform`
-- **Subtitle:** `End-to-end forensic auditing and real-time portfolio intelligence.`
-- **Button:** `Enter`
+**Layout:** Full-viewport (`100vh`) with a radial gradient background.
+**Verbatim Text:**
+- **Main Title:** `Lending Analytics Platform`
+- **Description:** `Turn daily loan data into actionable precise dashboards.`
+- **Call to Action:** `Enter` (Button)
 
----
-
-## 1. Data Ingestion Layer
-**Title:** `1. Data Ingestion Layer`
-**UI Composition:**
-- **Description Pill (LHS):** Styled with `background: rgba(59, 130, 246, 0.05)` and a `1px` border of the primary blue.
-- **Data Preview (RHS):** Two stacked `mini-table` components within a `1.5rem` gap flex column.
-
-**Precise Pill Text (LHS):**
-- Lender **A1B** submits structured daily loan events (payments, balances, write-offs) via a validated API
-- Data is validated and queued for ingestion into the S3 data lake for downstream processing
-
-**Precise Table Headers/Data (RHS):**
-- **Table 1 Header:** `Daily Loans (2026-04-12)`
-- **Table 1 Columns:** `Loan ID`, `Amount`, `City`
-- **Table 2 Header:** `Daily Payments (2026-04-12)`
-- **Table 2 Columns:** `Pay ID`, `Amount`, `Date Paid`
+**UI Elements:**
+- **Social Icons:** Row of grey icons (`#94a3b8`) for LinkedIn, GitHub, and Email, transitioning to blue on hover.
+  - **LinkedIn:** `https://www.linkedin.com/in/zaki-ahmed-14b907220/`
+  - **GitHub:** `https://github.com/zakiahmed1234`
+  - **Email:** `zaki.ahmed@aol.com`
 
 ---
 
-## 2. The Multi-Tenant Data Lake
-**Title:** `2. The Multi-Tenant Data Lake`
-**UI Composition:**
-- **Description Pill (LHS):** Emerald-themed (`rgba(16, 185, 129, 0.05)`) focusing on logical grouping and Parquet storage in S3.
-- **Central Lake Table (RHS):** A wider implementation of the `lake-table`. 
+## 3. Stage-by-Stage Content Ledger
 
-**Precise Pill Text (LHS):**
-- Data is logically grouped by lender, but physically stored as distributed Parquet files in S3.
-- This enables partition pruning, so only relevant data partitions are read for a given lender or time range.
+### Stage 1: Data Ingestion Layer
+- **Subtitle:** `Input daily data` (mid-grey, `#94a3b8`, positioned 0.5cm below title)
+- **LHS Narrative Pill:**
+  - `Lender A1B submits structured daily loan events (payments, balances, write-offs) via a validated API`
+  - `Data is validated and queued for ingestion into the S3 data lake for downstream processing`
+- **RHS Visuals:**
+  - **Table 1:** `Daily Loans (2026-04-12)`
+    - Columns: `Loan ID`, `Amount`, `City`
+    - Rows: `L-9901 | $15,000 | London`, `L-9902 | $8,200 | Nairobi`
+  - **Table 2:** `Daily Payments (2026-04-12)`
+    - Columns: `Pay ID`, `Amount`, `Date Paid`
+    - Rows: `P-551 | $1,248 | 2026-04-11`, `P-552 | $500 | 2026-04-10`
 
-**Precise Table Headers (RHS):**
-- **Columns:** `Lender & Date`, `Entity ID`, `Category`, `Amount`, `Location`
+### Stage 2: The Multi-Tenant Data Lake
+- **Subtitle:** `Secure, scalable data storage`
+- **LHS Narrative Pill:**
+  - `Data is logically grouped by lender, but physically stored as distributed Parquet files in S3.`
+  - `This enables partition pruning, so only relevant data partitions are read for a given lender or time range.`
+- **RHS Visuals:** 5-row wide table with the following headers:
+  - `Lender & Date`, `Entity ID`, `Category`, `Amount`, `Location`
+  - **Critical Rows:** Includes `LENDER_BETA (2026-04-10)` and `LENDER_056 (2025-08-15)` to demonstrate multi-tenancy.
 
----
-
-## 3. Loan State Engine
-**Title:** `3. Loan State Engine`
-**Layout:** A complex `250vh` scroll-track (`sync-scroll-track`) with a `sticky` container.
-
-**Precise Pill 1 Text (Initial Phase - LHS):**
-- Outstanding balances evolve based upon interest accrual, writeoffs, late fees, etc.
-- Calculating monthly change in balance requires complex recursive computations based on previous months.
-- We leverage DuckDB's fast in-memory and iterative execution to provide speedy and reliable calculations
-
-**Precise Pill 2 Text (Batch/Matrix Phase - LHS):**
-- Each computed loan-state is materialised into a **"loan-state table"**, representing a full snapshot of portfolio performance at a given point in time.
-- This enables real-time analysis of delinquency behaviour, including late payments, DPD trajectories, and risk assessments
-
-**Precise Chart Labels & Interaction (RHS):**
+### Stage 3: Loan State Engine
+- **Subtitle:** `Calculating loan performance`
+- **Interaction:** Synchronized 33-step animation (16 forensic months + 17 batch matrix months).
+- **LHS Narrative Pills:**
+  - **Pill 1 (Initial):** `Outstanding balances evolve based upon interest accrual, writeoffs, late fees, etc. Calculating monthly change in balance requires complex recursive computations based on previous months. We leverage DuckDB's fast in-memory and iterative execution to provide speedy and reliable calculations`
+  - **Pill 2 (Transition):** `Each computed loan-state is materialised into a "loan-state table", representing a full snapshot of portfolio performance at a given point in time. This enables real-time analysis of delinquency behaviour, including late payments, DPD trajectories, and risk assessments`
+- **RHS Chart Legend Items:**
+  - `Total Due (incl. interest)`
+  - `Partial Payment`
+  - `Missing Payment`
 - **Annotation Labels:** `PARTIAL PAYMENT`, `MISSING PAYMENT`, `WRITEOFF`, `CATCH-UP PAYMENTS`
-- **Hover Template:** `Status: [Status]`, `Balance: $[Value]`, `Paid: $[Value]`
+
+### Stage 4: Serverless Analytics Layer
+- **Subtitle:** `Computing statistical aggregations`
+- **Narrative Pill:**
+  - `Athena is used as a serverless SQL layer over the precomputed loan-state table in S3, enabling scalable cohort and risk analytics without managing a database cluster. This cleanly separates heavy per-loan computation (DuckDB) from large-scale aggregation queries, improving scalability and simplifying the overall architecture.`
+- **Verbatim Node Labels (SVG):**
+  - **Root:** `Loan State Table (S3)`
+  - **Leaves:** `Grade Vintage Curves`, `Regional Principal Mix`, `Sector Default Rates`, `Credit Grade Distribution`, `Score Evolution`
+  - **Meta Labels:** `DuckDB (local engine)`, `Distributed Athena Queries (serverless SQL)`
+
+### Stage 5: Portfolio Evolution
+- **Subtitle:** `Real-time metrics`
+- **Institutional Notes (LHS):**
+  - `We output real time dashboards that visualise Athena-aggregated cohort and risk metrics.`
+  - `Supports portfolio monitoring, including delinquency tracking and cohort performance.`
+  - `Used by 10+ commercial banking clients supporting 100k+ loans.`
+- **Stats Grid Labels:** `Loans`, `Volume`, `DPD rate`
+- **Navigation Buttons:** `📊 Grade Vintage Curves`, `🌍 Regional Principal Mix`, `💼 Sector Default Rates`, `🛡️ Credit Grade Distribution`, `📈 Score Evolution`
+- **Metric Descriptions:**
+  - `Analyzes cumulative default trajectories normalized by Months on Books (MOB).`
+  - `Visualizes geographic principal distribution using a 100% stacked area model.`
+  - `Benchmarks sector-specific risk by calculating the default rate per loan use category.`
+  - `Displays the static credit quality mix of the portfolio.`
+  - `Tracks the historical correlation between external Credit Bureau indicators and proprietary Internal risk scores.`
 
 ---
 
-## 4. Serverless Analytics Layer
-**Title:** `4. Serverless Analytics Layer`
-**Layout:** `350vh` scroll-track featuring a complex SVG directed graph.
+## 4. Technical Logic Specifications
 
-**Precise Pill Text (Top):**
-- Athena is used as a serverless SQL layer over the precomputed loan-state table in S3, enabling scalable cohort and risk analytics without managing a database cluster.
-- This cleanly separates heavy per-loan computation (DuckDB) from large-scale aggregation queries, improving scalability and simplifying the overall architecture.
+### Scroll Mapping
+The unified scroll track maps the global `1000vh` scroll height to stages as follows:
+- **0.0 - 0.2:** Stage 1
+- **0.2 - 0.4:** Stage 2
+- **0.4 - 0.6:** Stage 3 (Sync Internal: 0-1)
+- **0.6 - 0.8:** Stage 4 (Athena Internal: 0-1)
+- **0.8 - 1.0:** Stage 5 (Aggregate Internal: 0-1)
 
-**Precise SVG Node Content:**
-- **Root Node:** `Loan State Table (S3)`
-- **Leaf Node 1:** `Grade Vintage Curves`
-- **Leaf Node 2:** `Regional Principal Mix`
-- **Leaf Node 3:** `Sector Default Rates`
-- **Leaf Node 4:** `Credit Grade Distribution`
-- **Leaf Node 5:** `Score Evolution`
-- **Annotations:** `DuckDB (local engine)`, `Distributed Athena Queries (serverless SQL)`
-
----
-
-## 5. Portfolio Evolution
-**Title:** `5. Portfolio Evolution`
-**Layout:** A comprehensive analytics cockpit.
-
-**Precise Institutional Notes (LHS):**
-- We output real time dashboards that visualise Athena-aggregated cohort and risk metrics.
-- Supports portfolio monitoring, including delinquency tracking, cohort performance, and risk segmentation.
-- Used by 10+ commercial banking clients supporting portfolios of up to 100k+ loans.
-
-**Precise Stats Grid Labels (LHS):**
-- `Loans`, `Volume`, `Avg Rate`
-
-**Precise Metric Navigation Labels:**
-- `📊 Grade Vintage Curves`, `🌍 Regional Principal Mix`, `💼 Sector Default Rates`, `🛡️ Credit Grade Distribution`, `📈 Score Evolution`
-
-**Precise Metric Definitions (Description Box - RHS):**
-- **Grade Vintage Curves:** Analyzes cumulative default trajectories normalized by Months on Books (MOB).
-- **Regional Principal Mix:** Visualizes geographic principal distribution using a 100% stacked area model.
-- **Sector Default Rates:** Benchmarks sector-specific risk by calculating the default rate per loan use category. 
-- **Credit Grade Distribution:** Displays the static credit quality mix of the portfolio. 
-- **Score Evolution:** Tracks the historical correlation between external Credit Bureau indicators and proprietary Internal risk scores.
-
----
-
-## Scroll & Transition Engine
-- **Progression Logic:** The `initStoryScroll` function maps the global `0.0` to `1.0` scroll progress to specific `activeIdx` values. 
-  - `0.05 to 0.5`: Stage 1
-  - `0.5 to 1.0`: Stage 2
-- **Stage Visibility:** Stages are `position: absolute` within the `sticky-wrapper`. Only the `active` stage has `opacity: 1` and `pointer-events: auto`.
-- **Easing:** All opacity transitions use a standardized `0.8s ease-in-out` to ensure a cinematic feel during manual scrolling.
-- **Scroll Synchronization (Stage 3):** The `initSyncAnimation` maps `300vh` scroll height to a `33-step` animation sequence (16 forensic months + 17 batch matrix steps).
+### Slider Logic (Stage 5)
+- **Min/Max Initialization:** Dynamically set using `aggMeta.access_min_ts` and `aggMeta.access_max_ts`.
+- **Bidirectional Control:** The slider updates via scroll position AND manual user input (`oninput`).
+- **Date Display:** Verbatim split-string formatting: `new Date(ts).toISOString().split('T')[0]`.
