@@ -262,8 +262,8 @@
                         <!-- LHS: Text Pill -->
                         <div class="athena-pill" style="text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2);">
                             <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
-                                <li style="margin-bottom: 1.5rem;">Data is stored in global table partitioned by lender and ingestion date.</li>
-                                <li>This enables partition pruning for fast per-lender time-range queries.</li>
+                                <li style="margin-bottom: 1.5rem;">Data is logically grouped by lender, but physically stored as distributed Parquet files in S3.</li>
+                                <li>This enables partition pruning, so only relevant data partitions are read for a given lender or time range.</li>
                             </ul>
                         </div>
 
@@ -291,7 +291,7 @@
     <div class="sync-scroll-track" id="sync-track" style="height: 250vh;">
         <div class="sync-sticky">
             <div style="position: absolute; top: -5rem; text-align: center; width: 100%;">
-                <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">3. Forensic Reconstruction</h2>
+                <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">4. Forensic Reconstruction</h2>
                 <p style="color: #64748b; margin-top: 0.5rem;">Data pulled from Hive partitions generates the final Audit Trail in real-time.</p>
             </div>
             <div class="sync-grid">
@@ -300,13 +300,13 @@
                         <div id="sync-pill-1" class="athena-pill" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); transition: opacity 0.5s ease; display: flex; align-items: center; justify-content: flex-start;">
                             <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 1rem;">Outstanding balances evolve based upon interest accrual, writeoffs, late fees, etc.</li>
-                                <li style="margin-bottom: 1rem;">Each month's balance is dependent on previous month, following a recursive update rule</li>
-                                <li>DuckDB is used for complex recursive calculations, leveraging fast in-memory, iterative execution</li>
+                                <li style="margin-bottom: 1rem;">Calculating monthly change in balance requires complex recursive computations based on previous months.</li>
+                                <li>We leverage DuckDB's fast in-memory and iterative execution to provide speedy and reliable calculations</li>
                             </ul>
                         </div>
                         <div id="sync-pill-2" class="athena-pill" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); transition: opacity 0.5s ease; opacity: 0; pointer-events: none; display: flex; align-items: center; justify-content: flex-start;">
                             <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
-                                <li style="margin-bottom: 1rem;">Loan-level outstanding balances for today are computed for all loans within a single lender's portfolio, and are stored in a <strong style="color: #10b981;">"loan-state matrix"</strong>, which represents the performance of the entire portfolio.</li>
+                                <li style="margin-bottom: 1rem;">Each computed loan-state is materialised into a <strong>"loan-state matrix"</strong>, representing a full snapshot of portfolio performance at a given point in time.</li>
                                 <li>This enables real-time analysis of delinquency behaviour, including late payments, DPD trajectories, and risk assessments</li>
                             </ul>
                         </div>
@@ -334,7 +334,7 @@
     <div class="sync-scroll-track" id="athena-track" style="height: 350vh; margin-top: 10rem;">
         <div class="sync-sticky">
             <div style="position: absolute; top: -5rem; text-align: center; width: 100%;">
-                <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">4. Serverless Analytics Layer</h2>
+                <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">5. Serverless Analytics Layer</h2>
                 <p style="color: #64748b; margin-top: 0.5rem;">Athena enables scalable aggregation without database cluster management.</p>
             </div>
             
@@ -342,7 +342,7 @@
                 <div class="athena-pill-container">
                     <div class="athena-pill" style="max-width: 900px; text-align: left; padding: 1.5rem 3rem;">
                         <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc;">
-                            <li style="margin-bottom: 0.8rem;">Athena is used as a serverless SQL layer over the precomputed loan-state matrix in S3, enabling scalable cohort and risk analytics without managing a database cluster.</li>
+                            <li style="margin-bottom: 0.8rem;">Athena is used as a serverless SQL layer over the precomputed loan-state table in S3, enabling scalable cohort and risk analytics without managing a database cluster.</li>
                             <li>This cleanly separates heavy per-loan computation (DuckDB) from large-scale aggregation queries, improving scalability and simplifying the overall architecture.</li>
                         </ul>
                     </div>
@@ -380,7 +380,7 @@
                     
                     <!-- Root Node -->
                     <rect x="380" y="10" width="240" height="60" rx="4" class="node-box" id="node-root" />
-                    <text x="500" y="45" text-anchor="middle" class="node-text" id="text-root">Loan State Matrix (S3)</text>
+                    <text x="500" y="45" text-anchor="middle" class="node-text" id="text-root">Loan State Table (S3)</text>
                     
                     <!-- Leaf Nodes -->
                     <g id="leaf-1">
@@ -411,7 +411,7 @@
     <div class="sync-scroll-track" id="aggregate-track" style="height: 400vh; margin-top: 10rem;">
         <div class="sync-sticky" style="top: 5vh; height: auto; min-height: 90vh; display: flex; flex-direction: column;">
             <div style="text-align: center; width: 100%; margin-bottom: 2rem;">
-                <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">5. Portfolio Evolution</h2>
+                <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">6. Portfolio Evolution</h2>
                 <div id="aggDateDisplay" style="color: var(--primary); font-weight: 700; margin-top: 0.5rem; font-size: 1.1rem;"></div>
             </div>
             

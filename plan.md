@@ -23,25 +23,11 @@ This document provides a literal extraction of the narrative, titles, and techni
 **Layout:** 2-column grid. LHS contains a green-themed description pill. RHS features a wide "Lake Table" showing how data from multiple lenders is interleaved.
 
 **Exact Pill Text:**
-- Data is stored in global table partitioned by lender and ingestion date.
-- This enables partition pruning for fast per-lender time-range queries.
+- Data is logically grouped by lender, but physically stored as distributed Parquet files in S3.
+- This enables partition pruning, so only relevant data partitions are read for a given lender or time range.
 
 **Visual Components:**
 - **Central Lake Table:** Columns include `Lender & Date`, `Entity ID`, `Category`, `Amount`, and `Location`. Rows for `Lender_A1B` are highlighted to show they are co-mingled with other lenders.
-
----
-
-## Stage 3: The Efficiency Gap
-**Title:** `3. The Efficiency Gap`
-**Layout:** 3-panel horizontal grid comparing scanning techniques.
-
-**Exact Panel Text (Info Panel):**
-- Lender A1B's metrics are computed by scanning partitioned S3 loan data for relevant lender.
-- We use a hive partition to increase speed and reduce cost (often ~90% reduction in I/O)
-
-**Visual Components:**
-- **Panel 2 (Traditional DB: Full Scan):** A scrolling list of 150+ rows where a "scanner" must pass through every entry to find matches.
-- **Panel 3 (S3 Hive Partition Pruning):** A visualization of a file directory path (`s3://zakis-parquet-storage/loans/`) where only the relevant folders are accessed while others are dimmed out.
 
 ---
 
@@ -52,11 +38,11 @@ This document provides a literal extraction of the narrative, titles, and techni
 
 **Exact Pill 1 Text (Initial Phase):**
 - Outstanding balances evolve based upon interest accrual, writeoffs, late fees, etc.
-- Each month's balance is dependent on previous month, following a recursive update rule
-- DuckDB is used for complex recursive calculations, leveraging fast in-memory, iterative execution
+- Calculating monthly change in balance requires complex recursive computations based on previous months.
+- We leverage DuckDB's fast in-memory and iterative execution to provide speedy and reliable calculations
 
 **Exact Pill 2 Text (Batch/Matrix Phase):**
-- Loan-level outstanding balances for today are computed for all loans within a single lender's portfolio, and are stored in a **"loan-state matrix"**, which represents the performance of the entire portfolio.
+- Each computed loan-state is materialised into a **"loan-state matrix"**, representing a full snapshot of portfolio performance at a given point in time.
 - This enables real-time analysis of delinquency behaviour, including late payments, DPD trajectories, and risk assessments
 
 **Visual Components:**
@@ -71,11 +57,11 @@ This document provides a literal extraction of the narrative, titles, and techni
 **Layout:** A large interactive SVG Tree Map showing data flow from a root node to distributed analytics outputs.
 
 **Exact Pill Text:**
-- Athena is used as a serverless SQL layer over the precomputed loan-state matrix in S3, enabling scalable cohort and risk analytics without managing a database cluster.
+- Athena is used as a serverless SQL layer over the precomputed loan-state table in S3, enabling scalable cohort and risk analytics without managing a database cluster.
 - This cleanly separates heavy per-loan computation (DuckDB) from large-scale aggregation queries, improving scalability and simplifying the overall architecture.
 
 **Visual Components:**
-- **Tree Nodes:** Root is `Loan State Matrix (S3)`. Leaf nodes include `Grade Vintage Curves`, `Regional Principal Mix`, `Sector Default Rates`, `Credit Grade Distribution`, and `Score Evolution`.
+- **Tree Nodes:** Root is `Loan State Table (S3)`. Leaf nodes include `Grade Vintage Curves`, `Regional Principal Mix`, `Sector Default Rates`, `Credit Grade Distribution`, and `Score Evolution`.
 - **Annotations:** Explicit labels for `DuckDB (local engine)` and `Distributed Athena Queries (serverless SQL)`.
 
 ---
@@ -90,12 +76,12 @@ This document provides a literal extraction of the narrative, titles, and techni
 - Supports portfolio monitoring, including delinquency tracking, cohort performance, and risk segmentation.
 - Used by 10+ commercial banking clients supporting portfolios of up to 100k+ loans.
 
-**Exact Metric Navigation Labels:**
-- 📊 Grade Vintage Curves
-- 🌍 Regional Principal Mix
-- 💼 Sector Default Rates
-- 🛡️ Credit Grade Distribution
-- 📈 Score Evolution
+**Metric Navigation & Descriptions:**
+- **📊 Grade Vintage Curves:** Analyzes cumulative default trajectories normalized by Months on Books (MOB). This visualization benchmarks risk performance across credit tiers, demonstrating the sharp predictive divergence between prime (Grade A) and sub-prime (Grade D) cohorts.
+- **🌍 Regional Principal Mix:** Visualizes geographic principal distribution using a 100% stacked area model. This highlights relative shifts in regional concentration and capital allocation trends across the global portfolio over time.
+- **💼 Sector Default Rates:** Benchmarks sector-specific risk by calculating the default rate per loan use category. This identifies volatility clusters and industry-specific performance markers within the current active portfolio.
+- **🛡️ Credit Grade Distribution:** Displays the static credit quality mix of the portfolio. This proportional breakdown provides an institutional-view of capital distribution across the risk spectrum up to the selected cutoff date.
+- **📈 Score Evolution:** Tracks the historical correlation between external Credit Bureau indicators and proprietary Internal risk scores. This dual-axis time-series is critical for validating internal model efficacy against standardized market benchmarks.
 
 **Visual Components:**
 - **Time Slider:** Allows user to scrub through history (accessing min/max timestamps from `agg_meta.json`).
