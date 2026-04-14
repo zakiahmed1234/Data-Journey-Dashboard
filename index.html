@@ -216,19 +216,64 @@
             .sync-chart-wrapper { height: 350px !important; order: 2; }
             #sync-lhs { order: 1; }
 
+            /* Section 3: Loan State Engine Mobile Only */
+            #sync-table-container { display: none !important; }
+            #sync-lhs { flex: none !important; height: auto !important; }
+            #sync-lhs > div[style*="position: relative"] { position: relative !important; height: auto !important; flex: none !important; }
+            #sync-pill-1, #sync-pill-2 { 
+                position: relative !important; opacity: 1 !important; pointer-events: auto !important;
+                background: none !important; border: none !important; padding: 0 !important;
+                margin-bottom: 1rem;
+            }
+            #sync-pill-1 ul li, #sync-pill-2 ul li { font-size: 0.8rem !important; margin-bottom: 0.4rem !important; }
+            #sync-pill-2 { display: none !important; } /* Only show first set of text on mobile for simplicity */
+            .sync-chart-wrapper { height: 350px !important; order: 2; }
+            #sync-lhs { order: 1; }
+
             /* Section 4: Serverless Analytics Layer Mobile Only */
             .athena-pill-container { flex-direction: column; background: none !important; border: none !important; padding: 0 !important; }
             .athena-pill-container .athena-pill { background: none !important; border: none !important; padding: 0 !important; margin-bottom: 1rem; }
+            
+            .tree-svg { 
+                width: 100% !important; 
+                height: auto !important; 
+                max-height: 350px;
+            }
             
             /* Section 5: Portfolio Evolution Mobile Only */
             #stage-5 > div[style*="display: flex; flex-direction: column"] {
                 display: flex !important;
                 flex-direction: column !important;
             }
-            #aggSlider { order: 10; margin-top: 2rem !important; margin-bottom: 0 !important; }
             #stage-5 nav.top-nav { order: 1; }
-            #stage-5 div[style*="display: grid"] { order: 2; }
-            #stage-5 div[style*="background: rgba(255,255,255,0.03)"] { order: 11; margin-top: 1rem; } /* wrapper for slider label */
+            #stage-5 div[style*="display: grid"] { 
+                display: contents !important;
+            }
+            /* Institutional Notes above graph */
+            #stage-5 .info-panel { order: 2 !important; margin-bottom: 1.5rem !important; }
+            /* Flatten chart container to allow interleaved ordering */
+            #stage-5 div[style*="display: flex; flex-direction: column; gap: 1rem"] { 
+                display: contents !important;
+            }
+            #stage-5 .sync-chart-wrapper { 
+                order: 3 !important; 
+                height: 350px !important; 
+                margin-bottom: 1rem !important;
+                display: block !important;
+            }
+            /* Slider below graph */
+            #stage-5 > div:nth-child(2) > div:nth-child(1) { 
+                order: 4 !important; 
+                margin-top: 0 !important; 
+                margin-bottom: 1rem !important;
+                background: rgba(255,255,255,0.03) !important;
+            }
+            /* Description at the bottom */
+            #agg-chart-desc { 
+                order: 5 !important; 
+                margin-top: 0 !important; 
+                margin-bottom: 3rem !important; 
+            }
 
             .sync-table-wrapper { height: auto !important; max-height: 400px; overflow-x: auto; }
             
@@ -546,12 +591,18 @@
                     const config = { 
                         displayModeBar: false, 
                         responsive: true,
-                        staticPlot: isMobile // Make it load solidly like a picture on mobile
+                        staticPlot: isMobile
                     };
                     if (!el.data) Plotly.newPlot(id, traces, layout, config);
                     else Plotly.react(id, traces, layout, config);
                 } catch (e) { console.error("Plotly error on " + id, e); }
             };
+
+            window.addEventListener('resize', () => {
+                if (window.Plotly) {
+                    document.querySelectorAll('.js-plotly-plot').forEach(el => Plotly.Plots.resize(el));
+                }
+            });
 
             const AGG_DESCRIPTIONS = {
                 "grade-vintage": "Analyzes cumulative default trajectories normalized by Months on Books (MOB).",
@@ -585,10 +636,14 @@
                 let traces = [];
                 let layout = {
                     paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
-                    margin: { t: 20, b: 40, l: 50, r: 20 }, font: { color: '#94a3b8', size: 10 },
+                    margin: isMobile ? { t: 10, b: 60, l: 40, r: 10 } : { t: 20, b: 40, l: 50, r: 20 }, 
+                    font: { color: '#94a3b8', size: 10 },
                     xaxis: { gridcolor: 'rgba(255,255,255,0.05)', zeroline: false, title: { font: { size: 10 } } },
                     yaxis: { gridcolor: 'rgba(255,255,255,0.05)', zeroline: false, title: { font: { size: 10 } } },
-                    showlegend: true, legend: { font: { color: '#94a3b8', size: 10 }, bgcolor: 'rgba(0,0,0,0)' },
+                    showlegend: true, 
+                    legend: isMobile ? 
+                        { font: { color: '#94a3b8', size: 10 }, orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' } : 
+                        { font: { color: '#94a3b8', size: 10 }, bgcolor: 'rgba(0,0,0,0)' },
                     hovermode: 'x unified'
                 };
 
@@ -717,18 +772,20 @@
                     const s = syncState.fullHistory[i-1]; const next = syncState.fullHistory[i];
                     traces.push({ x: [s.mob, next.mob], y: [s.closing_principal, next.closing_principal], type: 'scatter', mode: 'lines', line: { color: getStatusColor(s.status, s.mob), width: 6 }, showlegend: false, hoverinfo: 'none' });
                 }
-                traces.push({ x: visibleRowsLine1.map(d => d.mob), y: visibleRowsLine1.map(d => d.closing_principal), name: 'Actual', type: 'scatter', mode: 'markers', marker: { size: 14, color: visibleRowsLine1.map(d => getMarkerColor(d)), line: { color: 'white', width: 3 } }, showlegend: false, customdata: visibleRowsLine1.map(d => [d.cash_received, d.write_off, d.due_date, (d.accumulated_arrears > 0.01 ? d.accumulated_arrears.toFixed(2) : 0), d.status]), hovertemplate: "<b>Status: %{customdata[4]}</b><br>Balance: $%{y:,.0f}<br>Paid: $%{customdata[0]}<br><extra></extra>" });
+                traces.push({ x: visibleRowsLine1.map(d => d.mob), y: visibleRowsLine1.map(d => d.closing_principal), name: 'Actual', type: 'scatter', mode: isMobile ? 'lines' : 'markers', marker: { size: 14, color: visibleRowsLine1.map(d => getMarkerColor(d)), line: { color: 'white', width: 3 } }, showlegend: false, customdata: visibleRowsLine1.map(d => [d.cash_received, d.write_off, d.due_date, (d.accumulated_arrears > 0.01 ? d.accumulated_arrears.toFixed(2) : 0), d.status]), hovertemplate: "<b>Status: %{customdata[4]}</b><br>Balance: $%{y:,.0f}<br>Paid: $%{customdata[0]}<br><extra></extra>" });
 
-                visibleRowsLine1.forEach(d => {
-                    const label = getMarkerLabel(d);
-                    if (!label) return;
-                    let show = false; let below = false;
-                    if (d.mob === 4) show = true; if (d.mob === 8) { show = true; below = true; } if (d.mob === 10) show = true; if (d.mob === 12) { show = true; below = true; }
-                    if (show) {
-                        const color = getMarkerColor(d);
-                        annotations.push({ x: d.mob, y: d.closing_principal, text: `<b>${label.toUpperCase()}</b>`, showarrow: true, arrowhead: 0, arrowsize: 1, arrowwidth: 2, arrowcolor: color, ax: 0, ay: (below ? 45 : -45), font: { color: d.status === 'Partial Write-off' ? '#0f172a' : 'white', size: 9 }, bgcolor: color, bordercolor: 'white', borderwidth: 2, borderpad: 6, opacity: 1 });
-                    }
-                });
+                if (!isMobile) {
+                    visibleRowsLine1.forEach(d => {
+                        const label = getMarkerLabel(d);
+                        if (!label) return;
+                        let show = false; let below = false;
+                        if (d.mob === 4) show = true; if (d.mob === 8) { show = true; below = true; } if (d.mob === 10) show = true; if (d.mob === 12) { show = true; below = true; }
+                        if (show) {
+                            const color = getMarkerColor(d);
+                            annotations.push({ x: d.mob, y: d.closing_principal, text: `<b>${label.toUpperCase()}</b>`, showarrow: true, arrowhead: 0, arrowsize: 1, arrowwidth: 2, arrowcolor: color, ax: 0, ay: (below ? 45 : -45), font: { color: d.status === 'Partial Write-off' ? '#0f172a' : 'white', size: 9 }, bgcolor: color, bordercolor: 'white', borderwidth: 2, borderpad: 6, opacity: 1 });
+                        }
+                    });
+                }
 
                 const batchBalances = [{ id: 'L-FORENSIC-001', val: syncState.fullHistory[line1VisibleIdx].closing_principal }];
                 for(let i = 0; i < syncState.abstractPaths.length; i++) {
@@ -743,7 +800,18 @@
                     } else { batchBalances.push({ id: loanId, val: pathData[0].y }); }
                 }
                 tableBody.innerHTML = batchBalances.map(b => `<tr><td>${b.id}</td><td style="font-weight:700; color:#60a5fa">$${b.val.toLocaleString()}</td></tr>`).join('');
-                const layout = { paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)', margin: { t: 60, b: 60, l: 60, r: 150 }, hovermode: 'closest', xaxis: { title: 'Months on books', range: [-0.5, 17.5], gridcolor: 'rgba(255,255,255,0.05)', tickfont: { color: '#64748b', size: 10 }, dtick: 1 }, yaxis: { title: 'Principal', range: [0, 32000], gridcolor: 'rgba(255,255,255,0.05)', tickfont: { color: '#64748b', size: 10 } }, showlegend: true, legend: { font: { color: '#94a3b8', size: 10 }, bgcolor: 'rgba(15, 23, 42, 0.8)', bordercolor: 'rgba(255,255,255,0.1)', borderwidth: 1, x: 1.05, y: 1 }, annotations: annotations };
+                const layout = { 
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)', 
+                    margin: isMobile ? { t: 40, b: 80, l: 40, r: 20 } : { t: 60, b: 60, l: 60, r: 150 }, 
+                    hovermode: 'closest', 
+                    xaxis: { title: 'Months on books', range: [-0.5, 17.5], gridcolor: 'rgba(255,255,255,0.05)', tickfont: { color: '#64748b', size: 10 }, dtick: 1 }, 
+                    yaxis: { title: 'Principal', range: [0, 32000], gridcolor: 'rgba(255,255,255,0.05)', tickfont: { color: '#64748b', size: 10 } }, 
+                    showlegend: true, 
+                    legend: isMobile ? 
+                        { font: { color: '#94a3b8', size: 10 }, orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' } : 
+                        { font: { color: '#94a3b8', size: 10 }, bgcolor: 'rgba(15, 23, 42, 0.8)', bordercolor: 'rgba(255,255,255,0.1)', borderwidth: 1, x: 1.05, y: 1 }, 
+                    annotations: annotations 
+                };
                 safePlot('sync-chart-container', traces, layout);
             }
 
@@ -796,9 +864,11 @@
                 }
 
                 if (isMobile) {
-                    updateSyncUI(1);
-                    updateAthenaUI(1);
-                    updateAggregateUI(1);
+                    setTimeout(() => {
+                        updateSyncUI(1);
+                        updateAthenaUI(1);
+                        updateAggregateUI(1);
+                    }, 500);
                 } else {
                     window.addEventListener('scroll', () => {
                         const rect = container.getBoundingClientRect();
