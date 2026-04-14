@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Journey | Lending Analytics Platform</title>
+    <title>Data Journey | The Efficiency Gap</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -16,6 +16,22 @@
             overflow-x: hidden;
         }
 
+        /* Sync Section Styles */
+        .sync-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; width: 100%; max-width: 1400px; height: 100%; padding: 0 2rem; }
+        .sync-table-wrapper { background: #1e293b; color: white; border-radius: 2rem; padding: 2rem; overflow-y: auto; scrollbar-width: none; border: 1px solid rgba(255,255,255,0.1); }
+        .sync-table-wrapper::-webkit-scrollbar { display: none; }
+        .sync-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .sync-table th { 
+            position: sticky; top: 0; background: #1e293b; z-index: 10;
+            text-align: left; color: #94a3b8; padding: 1rem; 
+            border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; 
+            text-transform: uppercase; letter-spacing: 1px; 
+        }
+        .sync-table td { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+        .sync-chart-wrapper { background: rgba(15, 23, 42, 0.8); border-radius: 2rem; padding: 2rem; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .sync-row-new { animation: fadeIn 0.3s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
         .hero {
             height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
             text-align: center; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
@@ -31,7 +47,7 @@
         .enter-btn:hover { transform: translateY(-3px); background: #2563eb; }
 
         .story-container { position: relative; }
-        .scroll-track { height: 1600vh; } 
+        .scroll-track { height: 1000vh; } 
 
         .sticky-wrapper {
             position: sticky; top: 0; height: 100vh; width: 100%;
@@ -43,13 +59,14 @@
             width: 100%; max-width: 1550px; transition: opacity 0.8s ease-in-out;
             position: absolute; opacity: 0; pointer-events: none;
             padding: 0 2rem;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%;
         }
         .story-stage.active { opacity: 1; pointer-events: auto; }
 
         .section-header { text-align: center; margin-bottom: 2rem; }
         .section-header h2 { font-size: 2.2rem; margin-bottom: 0.5rem; color: white; }
 
-        /* Unified Table Styles */
         .lake-table {
             width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.02); 
             border-radius: 1.5rem; overflow: hidden; font-size: 0.85rem;
@@ -59,59 +76,74 @@
         .lake-table td { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
         .highlight-row { background: rgba(59, 130, 246, 0.15) !important; box-shadow: inset 4px 0 0 var(--primary); }
 
-        /* Stage 3 Specifics */
-        .sync-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; width: 100%; max-width: 1400px; height: 100%; }
-        .sync-table-wrapper { background: #1e293b; color: white; border-radius: 2rem; padding: 2rem; overflow-y: auto; scrollbar-width: none; border: 1px solid rgba(255,255,255,0.1); max-height: 400px; }
-        .sync-table-wrapper::-webkit-scrollbar { display: none; }
-        .sync-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-        .sync-table th { position: sticky; top: 0; background: #1e293b; z-index: 10; text-align: left; color: #94a3b8; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
-        .sync-table td { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-        .sync-chart-wrapper { background: rgba(15, 23, 42, 0.8); border-radius: 2rem; padding: 2rem; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); flex-grow: 1; }
-
         .info-panel {
             background: rgba(255,255,255,0.03); border-radius: 1.5rem; padding: 2rem;
             border: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem;
         }
+        .info-panel h3 { color: white; margin-top: 0; font-size: 1.3rem; margin-bottom: 1rem; }
+        .info-panel p { color: #94a3b8; line-height: 1.6; }
         
-        .athena-pill {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            padding: 1rem 1.5rem; border-radius: 9999px; color: #cbd5e1; font-size: 0.9rem;
-            line-height: 1.4; flex: 1; display: flex; align-items: center; justify-content: center;
+        .panel-label {
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;
+            color: #475569; font-weight: 800; margin-bottom: 1.5rem; display: block; text-align: center;
         }
 
-        /* Nav & Stats Grid (Stage 5) */
-        .top-nav { display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 1rem; flex-wrap: wrap; width: 100%; }
+        /* Nav & Description Styles */
+        .top-nav { display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; width: 100%; }
         .nav-btn { 
             padding: 0.6rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; 
             cursor: pointer; border-radius: 9999px; transition: all 0.3s; font-weight: 600; font-size: 0.8rem;
         }
         .nav-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+        .nav-btn:hover:not(.active) { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+        
         .description-box { 
             background: rgba(255,255,255,0.03); border-left: 4px solid var(--primary); 
-            padding: 1rem; border-radius: 1rem; color: #94a3b8; line-height: 1.5; font-size: 0.85rem;
+            padding: 1.5rem; border-radius: 1rem; color: #94a3b8; line-height: 1.6;
+            font-size: 0.9rem; margin-top: 1.5rem;
         }
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; }
+
+        /* Snippet & Stats Grid Styles */
+        .stats-grid { 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem; 
+            padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);
+        }
         .stat-card { background: rgba(255,255,255,0.05); padding: 0.8rem; border-radius: 1rem; text-align: center; }
         .stat-card .label { font-size: 0.55rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
         .stat-card .val { font-size: 1rem; font-weight: 800; margin-top: 0.2rem; color: white; }
 
-        /* Athena Tree */
-        .athena-tree-container { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .tree-svg { width: 1000px; height: 420px; }
+        /* Athena Tree Section Styles */
+        .athena-tree-container {
+            width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .tree-svg { width: 1000px; height: 500px; }
         .node-box { fill: rgba(59, 130, 246, 0.1); stroke: var(--primary); stroke-width: 2; transition: all 0.5s ease; opacity: 0; transform-box: fill-box; transform: scale(0.8); transform-origin: center; }
         .node-box.visible { opacity: 1; transform: scale(1); }
         .node-text { fill: white; font-weight: 700; font-size: 14px; opacity: 0; transition: all 0.5s ease; pointer-events: none; }
         .node-text.visible { opacity: 1; }
         .tree-path { stroke: var(--primary); stroke-width: 2; fill: none; opacity: 0; transition: opacity 0.5s ease; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
         .tree-path.visible { opacity: 0.4; animation: drawPath 2s forwards; }
+        
+        .pulsate-node { animation: nodePulse 3s infinite ease-in-out; }
+        @keyframes nodePulse {
+            0% { stroke-width: 2; filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.4)); }
+            50% { stroke-width: 4; filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.8)); }
+            100% { stroke-width: 2; filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.4)); }
+        }
         @keyframes drawPath { to { stroke-dashoffset: 0; } }
+        
+        .athena-pill-container {
+            display: flex; gap: 1rem; max-width: 1200px; margin-bottom: 2rem; justify-content: center; width: 100%;
+        }
+        .athena-pill {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem 1.5rem; border-radius: 9999px; color: #cbd5e1; font-size: 0.9rem;
+            line-height: 1.4; flex: 1; text-align: center; display: flex; align-items: center; justify-content: center;
+        }
         .label-grey { fill: #94a3b8; font-size: 12px; font-weight: 600; font-family: 'Fira Code', monospace; opacity: 0; transition: opacity 0.5s ease; }
         .label-grey.visible { opacity: 1; }
         .arrow-line { stroke: #94a3b8; stroke-width: 1.5; fill: none; opacity: 0; transition: opacity 0.5s ease; }
         .arrow-line.visible { opacity: 0.8; }
-        .pulsate-node { animation: nodePulse 3s infinite ease-in-out; }
-        @keyframes nodePulse { 0% { stroke-width: 2; } 50% { stroke-width: 4; } 100% { stroke-width: 2; } }
-
     </style>
 </head>
 <body>
@@ -131,16 +163,19 @@
                     <div class="section-header">
                         <h2>1. Data Ingestion Layer</h2>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; width: 100%;">
+                        <!-- LHS: Text Pill -->
                         <div class="athena-pill" style="text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2);">
                             <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 1.5rem;">Lender <strong>A1B</strong> submits structured daily loan events (payments, balances, write-offs) via a validated API</li>
                                 <li>Data is validated and queued for ingestion into the S3 data lake for downstream processing</li>
                             </ul>
                         </div>
+
+                        <!-- RHS: Stacked Tables -->
                         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                            <div style="background:rgba(255,255,255,0.05); padding:1.2rem; border-radius:1rem;">
-                                <h4 style="color:var(--primary); margin:0 0 0.8rem 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Daily Loans (2026-04-12)</h4>
+                            <div class="mini-table" style="background:rgba(255,255,255,0.05); padding:1.2rem; border-radius:1rem;">
+                                <h4 style="color:var(--primary); margin-top:0; margin-bottom: 0.8rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Daily Loans (2026-04-12)</h4>
                                 <table class="lake-table">
                                     <thead><tr><th>Loan ID</th><th>Amount</th><th>City</th></tr></thead>
                                     <tbody>
@@ -149,8 +184,8 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div style="background:rgba(255,255,255,0.05); padding:1.2rem; border-radius:1rem;">
-                                <h4 style="color:var(--primary); margin:0 0 0.8rem 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Daily Payments (2026-04-12)</h4>
+                            <div class="mini-table" style="background:rgba(255,255,255,0.05); padding:1.2rem; border-radius:1rem;">
+                                <h4 style="color:var(--primary); margin-top:0; margin-bottom: 0.8rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Daily Payments (2026-04-12)</h4>
                                 <table class="lake-table">
                                     <thead><tr><th>Pay ID</th><th>Amount</th><th>Date Paid</th></tr></thead>
                                     <tbody>
@@ -168,13 +203,16 @@
                     <div class="section-header">
                         <h2>2. The Multi-Tenant Data Lake</h2>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 3rem; align-items: center;">
+                    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 3rem; align-items: center; width: 100%;">
+                        <!-- LHS: Text Pill -->
                         <div class="athena-pill" style="text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2);">
                             <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 1.5rem;">Data is logically grouped by lender, but physically stored as distributed Parquet files in S3.</li>
                                 <li>This enables partition pruning, so only relevant data partitions are read for a given lender or time range.</li>
                             </ul>
                         </div>
+
+                        <!-- RHS: Narrow Table -->
                         <div style="max-width: 800px; width: 100%;">
                             <table class="lake-table">
                                 <thead><tr><th>Lender & Date</th><th>Entity ID</th><th>Category</th><th>Amount</th><th>Location</th></tr></thead>
@@ -192,27 +230,27 @@
 
                 <!-- STAGE 3 -->
                 <div class="story-stage" id="stage-3">
-                    <div class="section-header">
-                        <h2>3. Loan State Engine</h2>
+                    <div style="text-align: center; width: 100%; margin-bottom: 2rem;">
+                        <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">3. Loan State Engine</h2>
                     </div>
                     <div class="sync-grid">
-                        <div id="sync-lhs" style="display: flex; flex-direction: column; gap: 1rem;">
-                            <div style="position: relative; min-height: 200px;">
-                                <div id="sync-pill-1" class="athena-pill" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; text-align: left; padding: 1.5rem; border-radius: 1.5rem; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); transition: opacity 0.5s ease;">
-                                    <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 0.95rem; line-height: 1.5;">
-                                        <li style="margin-bottom: 0.8rem;">Outstanding balances evolve based upon interest accrual, writeoffs, late fees, etc.</li>
-                                        <li style="margin-bottom: 0.8rem;">Calculating monthly change in balance requires complex recursive computations based on previous months.</li>
+                        <div id="sync-lhs" style="display: flex; flex-direction: column; gap: 1rem; height: 100%; transition: all 0.5s ease;">
+                            <div style="position: relative; flex: 1 1 40%;">
+                                <div id="sync-pill-1" class="athena-pill" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); transition: opacity 0.5s ease; display: flex; align-items: center; justify-content: flex-start;">
+                                    <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
+                                        <li style="margin-bottom: 1rem;">Outstanding balances evolve based upon interest accrual, writeoffs, late fees, etc.</li>
+                                        <li style="margin-bottom: 1rem;">Calculating monthly change in balance requires complex recursive computations based on previous months.</li>
                                         <li>We leverage DuckDB's fast in-memory and iterative execution to provide speedy and reliable calculations</li>
                                     </ul>
                                 </div>
-                                <div id="sync-pill-2" class="athena-pill" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; text-align: left; padding: 1.5rem; border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); transition: opacity 0.5s ease; opacity: 0; pointer-events: none;">
-                                    <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 0.95rem; line-height: 1.5;">
-                                        <li style="margin-bottom: 0.8rem;">Each computed loan-state is materialised into a <strong>"loan-state table"</strong>, representing a full snapshot of portfolio performance at a given point in time.</li>
+                                <div id="sync-pill-2" class="athena-pill" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; text-align: left; padding: 2rem; border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); transition: opacity 0.5s ease; opacity: 0; pointer-events: none; display: flex; align-items: center; justify-content: flex-start;">
+                                    <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
+                                        <li style="margin-bottom: 1rem;">Each computed loan-state is materialised into a <strong>"loan-state table"</strong>, representing a full snapshot of portfolio performance at a given point in time.</li>
                                         <li>This enables real-time analysis of delinquency behaviour, including late payments, DPD trajectories, and risk assessments</li>
                                     </ul>
                                 </div>
                             </div>
-                            <div id="sync-table-container" class="sync-table-wrapper">
+                            <div id="sync-table-container" class="sync-table-wrapper" style="flex: 1 1 60%; transition: all 0.5s ease;">
                                 <table class="sync-table" id="sync-active-table">
                                     <thead id="sync-table-head"></thead>
                                     <tbody id="sync-table-body"></tbody>
@@ -227,23 +265,35 @@
 
                 <!-- STAGE 4 -->
                 <div class="story-stage" id="stage-4">
-                    <div class="section-header">
-                        <h2>4. Serverless Analytics Layer</h2>
+                    <div style="text-align: center; width: 100%; margin-bottom: 2rem;">
+                        <h2 style="color: white; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">4. Serverless Analytics Layer</h2>
                     </div>
                     <div class="athena-tree-container">
-                        <div class="athena-pill" style="max-width: 900px; text-align: left; padding: 1rem 2rem; margin-bottom: 2rem; border-radius: 1.5rem;">
-                            <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1rem; line-height: 1.5;">
-                                <li style="margin-bottom: 0.5rem;">Athena is used as a serverless SQL layer over the precomputed loan-state table in S3, enabling scalable cohort and risk analytics without managing a database cluster.</li>
-                                <li>This cleanly separates heavy per-loan computation (DuckDB) from large-scale aggregation queries, improving scalability and simplifying the overall architecture.</li>
-                            </ul>
+                        <div class="athena-pill-container">
+                            <div class="athena-pill" style="max-width: 900px; text-align: left; padding: 1.5rem 3rem;">
+                                <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc;">
+                                    <li style="margin-bottom: 0.8rem;">Athena is used as a serverless SQL layer over the precomputed loan-state table in S3, enabling scalable cohort and risk analytics without managing a database cluster.</li>
+                                    <li>This cleanly separates heavy per-loan computation (DuckDB) from large-scale aggregation queries, improving scalability and simplifying the overall architecture.</li>
+                                </ul>
+                            </div>
                         </div>
+                        
                         <svg class="tree-svg" id="athena-tree-svg" viewBox="0 -70 1000 420" preserveAspectRatio="xMidYMid meet">
                             <defs>
-                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="var(--primary)" /></marker>
-                                <marker id="arrowhead-grey" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" /></marker>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--primary)" />
+                                </marker>
+                                <marker id="arrowhead-grey" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+                                </marker>
                             </defs>
-                            <g id="duck-annotation"><text x="520" y="-20" class="label-grey">DuckDB (local engine)</text><path d="M 500 -60 L 500 8" class="arrow-line" marker-end="url(#arrowhead-grey)" /></g>
-                            <g id="athena-annotation"><text x="520" y="100" class="label-grey">Distributed Athena Queries (serverless SQL)</text></g>
+                            <g id="duck-annotation">
+                                <text x="520" y="-20" class="label-grey">DuckDB (local engine)</text>
+                                <path d="M 500 -60 L 500 8" class="arrow-line" marker-end="url(#arrowhead-grey)" />
+                            </g>
+                            <g id="athena-annotation">
+                                <text x="520" y="100" class="label-grey">Distributed Athena Queries (serverless SQL)</text>
+                            </g>
                             <path d="M 500 70 L 500 120" class="tree-path" id="path-main" />
                             <path d="M 100 120 L 900 120" class="tree-path" id="path-crossbar" />
                             <path d="M 100 120 L 100 165" class="tree-path" id="path-drop-1" marker-end="url(#arrowhead)" />
@@ -251,12 +301,28 @@
                             <path d="M 500 120 L 500 165" class="tree-path" id="path-drop-3" marker-end="url(#arrowhead)" />
                             <path d="M 700 120 L 700 165" class="tree-path" id="path-drop-4" marker-end="url(#arrowhead)" />
                             <path d="M 900 120 L 900 165" class="tree-path" id="path-drop-5" marker-end="url(#arrowhead)" />
-                            <rect x="380" y="10" width="240" height="60" rx="4" class="node-box" id="node-root" /><text x="500" y="45" text-anchor="middle" class="node-text" id="text-root">Loan State Table (S3)</text>
-                            <g id="leaf-1"><rect x="15" y="170" width="170" height="50" rx="4" class="node-box" /><text x="100" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Grade Vintage Curves</text></g>
-                            <g id="leaf-2"><rect x="215" y="170" width="170" height="50" rx="4" class="node-box" /><text x="300" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Regional Principal Mix</text></g>
-                            <g id="leaf-3"><rect x="415" y="170" width="170" height="50" rx="4" class="node-box" /><text x="500" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Sector Default Rates</text></g>
-                            <g id="leaf-4"><rect x="615" y="170" width="170" height="50" rx="4" class="node-box" /><text x="700" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Credit Grade Distribution</text></g>
-                            <g id="leaf-5"><rect x="815" y="170" width="170" height="50" rx="4" class="node-box" /><text x="900" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Score Evolution</text></g>
+                            <rect x="380" y="10" width="240" height="60" rx="4" class="node-box" id="node-root" />
+                            <text x="500" y="45" text-anchor="middle" class="node-text" id="text-root">Loan State Table (S3)</text>
+                            <g id="leaf-1">
+                                <rect x="15" y="170" width="170" height="50" rx="4" class="node-box" />
+                                <text x="100" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Grade Vintage Curves</text>
+                            </g>
+                            <g id="leaf-2">
+                                <rect x="215" y="170" width="170" height="50" rx="4" class="node-box" />
+                                <text x="300" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Regional Principal Mix</text>
+                            </g>
+                            <g id="leaf-3">
+                                <rect x="415" y="170" width="170" height="50" rx="4" class="node-box" />
+                                <text x="500" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Sector Default Rates</text>
+                            </g>
+                            <g id="leaf-4">
+                                <rect x="615" y="170" width="170" height="50" rx="4" class="node-box" />
+                                <text x="700" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Credit Grade Distribution</text>
+                            </g>
+                            <g id="leaf-5">
+                                <rect x="815" y="170" width="170" height="50" rx="4" class="node-box" />
+                                <text x="900" y="200" text-anchor="middle" class="node-text" style="font-size: 11px;">Score Evolution</text>
+                            </g>
                         </svg>
                     </div>
                 </div>
@@ -267,41 +333,43 @@
                         <h2 style="color: white; font-size: 2.2rem; letter-spacing: -2px; margin: 0;">5. Portfolio Evolution</h2>
                         <div id="aggDateDisplay" style="color: var(--primary); font-weight: 700; margin-top: 0.2rem; font-size: 1rem;"></div>
                     </div>
-                    <div style="width: 100%; max-width: 1400px; flex-grow: 1; display: flex; flex-direction: column;">
+                    <div style="width: 100%; max-width: 1400px; padding: 0 2rem; flex-grow: 1; display: flex; flex-direction: column;">
                         <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 1.5rem; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.05);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                                 <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #475569; font-weight: 800;">Historical Portfolio Cutoff</span>
                             </div>
                             <input type="range" id="aggSlider" style="width: 100%; accent-color: var(--primary); background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; cursor: pointer;">
                         </div>
-                        <nav class="top-nav">
+                        <nav class="top-nav" style="margin-bottom: 1rem;">
                             <button class="nav-btn active" data-chart="grade-vintage">📊 Grade Vintage Curves</button>
                             <button class="nav-btn" data-chart="regional">🌍 Regional Principal Mix</button>
                             <button class="nav-btn" data-chart="sector">💼 Sector Default Rates</button>
                             <button class="nav-btn" data-chart="grades">🛡️ Credit Grade Distribution</button>
                             <button class="nav-btn" data-chart="scores">📈 Score Evolution</button>
                         </nav>
-                        <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 1.5rem; flex-grow: 1; align-items: stretch; min-height: 400px; margin-bottom: 1rem;">
-                            <div class="info-panel" style="display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem;">
-                                <div style="flex-grow: 1;">
-                                    <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #475569; font-weight: 800; margin-bottom: 0.8rem; display: block;">Institutional Notes</span>
-                                    <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 0.95rem; line-height: 1.5;">
+                        <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 1.5rem; flex-grow: 1; align-items: stretch; min-height: 450px; margin-bottom: 1rem;">
+                            <div class="info-panel" style="display: flex; flex-direction: column; gap: 1rem; background: rgba(255,255,255,0.03); padding: 1.5rem;">
+                                <div style="flex-grow: 1; display: flex; flex-direction: column;">
+                                    <span class="panel-label" style="text-align: left; margin-bottom: 0.8rem;">Institutional Notes</span>
+                                    <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc; color: #94a3b8; font-size: 1rem; line-height: 1.5;">
                                         <li style="margin-bottom: 0.5rem;">We output real time dashboards that visualise Athena-aggregated cohort and risk metrics.</li>
                                         <li style="margin-bottom: 0.5rem;">Supports portfolio monitoring, including delinquency tracking and cohort performance.</li>
                                         <li>Used by 10+ commercial banking clients supporting 100k+ loans.</li>
                                     </ul>
                                 </div>
-                                <div class="stats-grid">
+                                <div class="stats-grid" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
                                     <div class="stat-card"><div class="label">Loans</div><div id="stat-count" class="val">0</div></div>
                                     <div class="stat-card"><div class="label">Volume</div><div id="stat-vol" class="val">$0</div></div>
                                     <div class="stat-card"><div class="label">Avg Rate</div><div id="stat-rate" class="val">0%</div></div>
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                <div class="sync-chart-wrapper" style="padding: 1rem; flex-grow: 1; background: rgba(15, 23, 42, 0.4); min-height: 300px;">
+                                <div class="sync-chart-wrapper" style="padding: 1rem; flex-grow: 1; background: rgba(15, 23, 42, 0.4);">
                                     <div id="active-aggregate-chart" style="height: 100%; width: 100%;"></div>
                                 </div>
-                                <div class="description-box" id="agg-chart-desc" style="min-height: 60px;">Select a metric...</div>
+                                <div class="description-box" id="agg-chart-desc" style="margin-top: 0; min-height: 60px; padding: 1rem; font-size: 0.85rem;">
+                                    Select a metric to view detailed institutional analysis.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -315,20 +383,21 @@
         document.getElementById('enter-btn').addEventListener('click', () => {
             const container = document.querySelector('.story-container');
             const scrollHeight = container.scrollHeight - window.innerHeight;
-            window.scrollTo({ top: container.offsetTop + (scrollHeight * 0.08), behavior: 'smooth' });
+            window.scrollTo({
+                top: container.offsetTop + (scrollHeight * 0.05),
+                behavior: 'smooth'
+            });
         });
 
         let aggPayloadRaw, aggMeta, forensicHistory, idealAmortization, aggPayload;
-        const AGG_DESCRIPTIONS = {
-            "grade-vintage": "Analyzes cumulative default trajectories normalized by Months on Books (MOB).",
-            "regional": "Visualizes geographic principal distribution using a 100% stacked area model.",
-            "sector": "Benchmarks sector-specific risk by calculating the default rate per loan use category.",
-            "grades": "Displays the static credit quality mix of the portfolio.",
-            "scores": "Tracks the historical correlation between external Credit Bureau indicators and proprietary Internal risk scores."
-        };
 
         const loadData = () => new Promise(async (resolve) => {
-            const loadCSV = (url) => new Promise((resolveCSV) => Papa.parse(url, { download: true, header: true, dynamicTyping: true, skipEmptyLines: true, complete: (res) => resolveCSV(res.data) }));
+            const loadCSV = (url) => new Promise((resolveCSV) => {
+                Papa.parse(url, {
+                    download: true, header: true, dynamicTyping: true, skipEmptyLines: true,
+                    complete: (results) => resolveCSV(results.data)
+                });
+            });
             aggPayloadRaw = await loadCSV('agg_payload.csv');
             aggMeta = await (await fetch('agg_meta.json')).json();
             forensicHistory = await loadCSV('forensic_history.csv');
@@ -338,229 +407,265 @@
             resolve();
         });
 
-        const safePlot = (id, traces, layout) => {
-            const el = document.getElementById(id); if (!el) return;
-            if (!el.data) Plotly.newPlot(id, traces, layout, {displayModeBar: false, responsive: true});
-            else Plotly.react(id, traces, layout, {displayModeBar: false, responsive: true});
-        };
+        try {
+            const safePlot = (id, traces, layout) => {
+                try {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    if (!el.data) Plotly.newPlot(id, traces, layout, {displayModeBar: false, responsive: true});
+                    else Plotly.react(id, traces, layout, {displayModeBar: false, responsive: true});
+                } catch (e) { console.error("Plotly error on " + id, e); }
+            };
 
-        // --- GLOBAL STORY LOGIC ---
-        function initGlobalStory() {
-            const container = document.querySelector('.story-container');
-            const stages = [
-                document.getElementById('stage-1'), document.getElementById('stage-2'),
-                document.getElementById('stage-3'), document.getElementById('stage-4'),
-                document.getElementById('stage-5')
-            ];
-            
-            // Re-fetch elements for specific animations
-            const p1 = document.getElementById('sync-pill-1');
-            const p2 = document.getElementById('sync-pill-2');
-            const root = document.getElementById('node-root');
-            const rootText = document.getElementById('text-root');
-            const mainPath = document.getElementById('path-main');
-            const crossbar = document.getElementById('path-crossbar');
-            const drops = [1,2,3,4,5].map(i => document.getElementById(`path-drop-${i}`));
-            const leaves = [1,2,3,4,5].map(i => document.getElementById(`leaf-${i}`));
-            const duckAnnotation = document.getElementById('duck-annotation');
-            const athenaAnnotation = document.getElementById('athena-annotation');
+            const AGG_DESCRIPTIONS = {
+                "grade-vintage": "Analyzes cumulative default trajectories normalized by Months on Books (MOB).",
+                "regional": "Visualizes geographic principal distribution using a 100% stacked area model.",
+                "sector": "Benchmarks sector-specific risk by calculating the default rate per loan use category.",
+                "grades": "Displays the static credit quality mix of the portfolio.",
+                "scores": "Tracks the historical correlation between external Credit Bureau indicators and proprietary Internal risk scores."
+            };
 
-            window.addEventListener('scroll', () => {
-                const rect = container.getBoundingClientRect();
-                const scrollHeight = container.scrollHeight - window.innerHeight;
-                const progress = Math.min(Math.max(-rect.top / scrollHeight, 0), 1);
-                
-                let activeIdx = -1;
-                // Fade ranges
-                if (progress > 0.02 && progress < 0.22) activeIdx = 0;
-                else if (progress >= 0.22 && progress < 0.42) activeIdx = 1;
-                else if (progress >= 0.42 && progress < 0.62) activeIdx = 2;
-                else if (progress >= 0.62 && progress < 0.82) activeIdx = 3;
-                else if (progress >= 0.82) activeIdx = 4;
+            let activeAggChart = 'grade-vintage';
 
-                stages.forEach((s, i) => s.classList.toggle('active', i === activeIdx));
-
-                // Stage 3 Logic (0.42 - 0.62 range)
-                if (activeIdx === 2) {
-                    const localP = (progress - 0.42) / 0.20;
-                    updateSyncUI(localP);
-                    const isAbstract = localP > 0.5;
-                    p1.style.opacity = isAbstract ? 0 : 1;
-                    p2.style.opacity = isAbstract ? 1 : 0;
-                }
-
-                // Stage 4 Logic (0.62 - 0.82 range)
-                if (activeIdx === 3) {
-                    const localP = (progress - 0.62) / 0.20;
-                    duckAnnotation.querySelectorAll('.label-grey, .arrow-line').forEach(el => el.classList.toggle('visible', localP > 0.05));
-                    root.classList.toggle('visible', localP > 0.1);
-                    rootText.classList.toggle('visible', localP > 0.1);
-                    mainPath.classList.toggle('visible', localP > 0.2);
-                    athenaAnnotation.querySelectorAll('.label-grey, .arrow-line').forEach(el => el.classList.toggle('visible', localP > 0.2));
-                    crossbar.classList.toggle('visible', localP > 0.4);
-                    drops.forEach((d, i) => d.classList.toggle('visible', localP > 0.5 + (i * 0.05)));
-                    leaves.forEach((l, i) => {
-                        l.querySelector('rect').classList.toggle('visible', localP > 0.75 + (i * 0.05));
-                        l.querySelector('text').classList.toggle('visible', localP > 0.75 + (i * 0.05));
-                    });
-                }
-
-                // Stage 5 Logic (0.82 - 1.0 range)
-                if (activeIdx === 4) {
-                    const localP = (progress - 0.82) / 0.18;
-                    const ts = aggMeta.access_min_ts + localP * (aggMeta.access_max_ts - aggMeta.access_min_ts);
-                    updateAggUI(ts);
-                }
-            });
-        }
-
-        // --- STAGE 3 SPECIFIC ---
-        let lastSyncIdx = -1;
-        function updateSyncUI(progress) {
-            const tableBody = document.getElementById('sync-table-body');
-            const chartContainer = document.getElementById('sync-chart-container');
-            const totalSteps = 33;
-            const idx = Math.floor(progress * (totalSteps - 1));
-            if (idx === lastSyncIdx) return;
-            lastSyncIdx = idx;
-
-            const fullHistory = [{ mob:0, closing_principal:25000, total_due_exposure:25000, status:'Healthy', cash_received:0, write_off:0, due_date:'2023-01-15' }, ...forensicHistory];
-            const line1EndIdx = 15;
-            const line1VisibleIdx = Math.min(idx, line1EndIdx);
-            const abstractVisibleMonths = idx > line1EndIdx ? Math.min(idx - line1EndIdx, 16) : 0;
-            
-            const traces = [];
-            const annotations = [];
-            
-            // Legend
-            traces.push({ x:[null], y:[null], name:'Total Due (incl. interest)', mode:'lines', line:{color:'#94a3b8', width:2, dash:'dot'}, showlegend:true });
-            traces.push({ x:[null], y:[null], name:'Partial Payment', mode:'lines', line:{color:'#f59e0b', width:6}, showlegend:true });
-            traces.push({ x:[null], y:[null], name:'Missing Payment', mode:'lines', line:{color:'#ef4444', width:6}, showlegend:true });
-
-            const visibleRows = fullHistory.slice(0, line1VisibleIdx + 1);
-            traces.push({ x:visibleRows.map(d=>d.mob), y:visibleRows.map(d=>d.total_due_exposure), mode:'lines', line:{color:'#94a3b8', width:2, dash:'dot'}, showlegend:false });
-            traces.push({ x:visibleRows.map(d=>d.mob), y:idealAmortization.slice(0, line1VisibleIdx + 1), mode:'lines', line:{color:'rgba(59,130,246,0.2)', width:2}, showlegend:false });
-            
-            for(let i=1; i<=line1VisibleIdx; i++){
-                const s=fullHistory[i-1], n=fullHistory[i];
-                const color = (s.status==='Missed Payment'||s.status==='Delinquent'||s.status==='Partial Write-off') ? '#ef4444' : (s.status==='Partial Payment' ? '#f59e0b' : '#3b82f6');
-                traces.push({ x:[s.mob, n.mob], y:[s.closing_principal, n.closing_principal], mode:'lines', line:{color:color, width:6}, showlegend:false });
+            function updateStats(data) {
+                const countEl = document.getElementById('stat-count');
+                const volEl = document.getElementById('stat-vol');
+                const rateEl = document.getElementById('stat-rate');
+                if (!countEl || !volEl || !rateEl) return;
+                countEl.innerText = data.length.toLocaleString();
+                const totalVol = data.reduce((sum, d) => sum + d.loan_amount, 0);
+                volEl.innerText = "$" + (totalVol/1e6).toFixed(2) + "M";
+                const avgRate = data.reduce((sum, d) => sum + d.interest_rate, 0) / (data.length || 1);
+                rateEl.innerText = avgRate.toFixed(1) + "%";
             }
 
-            const getMarkerColor = (s) => (s==='Partial Write-off' ? '#fff' : (s==='Catch-up Payment' ? '#10b981' : (s==='Partial Payment' ? '#f59e0b' : (s==='Missed Payment'||s==='Delinquent' ? '#ef4444' : '#3b82f6'))));
-            traces.push({ x:visibleRows.map(d=>d.mob), y:visibleRows.map(d=>d.closing_principal), mode:'markers', marker:{size:12, color:visibleRows.map(d=>getMarkerColor(d.status)), line:{color:'#fff', width:2}}, showlegend:false });
+            function renderAggregateCharts(data) {
+                const containerId = 'active-aggregate-chart';
+                const container = document.getElementById(containerId);
+                const descEl = document.getElementById('agg-chart-desc');
+                if (!container) return;
+                if (descEl) descEl.innerText = AGG_DESCRIPTIONS[activeAggChart];
 
-            // Table
-            const batchBalances = [{ id: 'L-FORENSIC-001', val: fullHistory[line1VisibleIdx].closing_principal }];
-            tableBody.innerHTML = batchBalances.map(b => `<tr><td>${b.id}</td><td style="font-weight:700; color:#60a5fa">$${b.val.toLocaleString()}</td></tr>`).join('');
-
-            const layout = { paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', margin:{t:40, b:40, l:50, r:120}, xaxis:{range:[-0.5, 17.5], gridcolor:'rgba(255,255,255,0.05)'}, yaxis:{range:[0, 32000], gridcolor:'rgba(255,255,255,0.05)'}, showlegend:true, legend:{font:{color:'#94a3b8', size:9}, x:1.05, y:1} };
-            safePlot('sync-chart-container', traces, layout);
-        }
-
-        // --- STAGE 5 SPECIFIC ---
-        let activeAggChart = 'grade-vintage';
-        function updateAggUI(ts) {
-            const dateDisplay = document.getElementById('aggDateDisplay');
-            const slider = document.getElementById('aggSlider');
-            dateDisplay.innerText = new Date(ts).toISOString().split('T')[0];
-            slider.value = ts;
-            const filtered = aggPayload.filter(d => d.ts <= ts);
-            
-            // Stats
-            document.getElementById('stat-count').innerText = filtered.length.toLocaleString();
-            const totalVol = filtered.reduce((sum, d) => sum + d.loan_amount, 0);
-            document.getElementById('stat-vol').innerText = "$" + (totalVol/1e6).toFixed(2) + "M";
-            const avgRate = filtered.reduce((sum, d) => sum + d.interest_rate, 0) / (filtered.length || 1);
-            document.getElementById('stat-rate').innerText = avgRate.toFixed(1) + "%";
-
-            // Chart
-            renderAggChart(filtered);
-        }
-
-        function renderAggChart(data) {
-            const descEl = document.getElementById('agg-chart-desc');
-            descEl.innerText = AGG_DESCRIPTIONS[activeAggChart];
-            let traces = [], layout = { paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', margin:{t:20, b:30, l:40, r:20}, font:{color:'#94a3b8', size:10}, xaxis:{gridcolor:'rgba(255,255,255,0.05)'}, yaxis:{gridcolor:'rgba(255,255,255,0.05)'}, showlegend:true };
-
-            if (activeAggChart === 'grade-vintage') {
-                ['A','B','C','D'].forEach(g => {
-                    const slice = data.filter(d => d.loan_grade === g);
-                    if (slice.length === 0) return;
-                    const rate = (slice.filter(d => d.loan_status === 'Defaulted').length / slice.length) * 100;
-                    const x = Array.from({length: 25}, (_, i) => i);
-                    traces.push({ x: x, y: x.map(m => rate * (1/(1+Math.exp(-0.4*(m-8))))), name: 'Grade '+g, mode: 'lines', line: {width:3} });
-                });
-                layout.yaxis = { title: 'Cum. Default Rate (%)', gridcolor: 'rgba(255,255,255,0.05)' };
-                layout.xaxis = { title: 'MOB', gridcolor: 'rgba(255,255,255,0.05)' };
-            } 
-            else if (activeAggChart === 'regional') {
-                const months = Array.from(new Set(data.map(d => d.origination_month))).sort();
-                const categories = Array.from(new Set(data.map(d => d.location_city))).sort();
-                const monthTotals = {};
-                months.forEach(m => {
-                    monthTotals[m] = data.filter(d => d.origination_month === m).reduce((sum, d) => sum + d.loan_amount, 0);
-                });
-                categories.forEach(cat => {
-                    const y = months.map(m => {
-                        const total = monthTotals[m];
-                        if (total === 0) return 0;
-                        const val = data.filter(d => d.origination_month === m && d.location_city === cat).reduce((sum, d) => sum + d.loan_amount, 0);
-                        return (val / total) * 100;
-                    });
-                    traces.push({ x: months, y: y, name: cat, stackgroup: 'one', mode: 'lines', line: { width: 0 }, fill: 'tonexty' });
-                });
-                layout.yaxis = { title: 'Principal Distribution (%)', gridcolor: 'rgba(255,255,255,0.05)' };
-            }
-            else if (activeAggChart === 'sector') {
-                const sectors = {};
-                data.forEach(d => {
-                    if (!sectors[d.loan_use]) sectors[d.loan_use] = {d:0, t:0};
-                    if (d.loan_status === 'Defaulted') sectors[d.loan_use].d++;
-                    sectors[d.loan_use].t++;
-                });
-                const x = Object.keys(sectors).sort();
-                const y = x.map(s => (sectors[s].d / sectors[s].t) * 100);
-                traces.push({ x: x, y: y, type: 'bar', marker: { color: '#3b82f6' } });
-                layout.yaxis = { title: 'Default Rate (%)', gridcolor: 'rgba(255,255,255,0.05)' };
-            }
-            else if (activeAggChart === 'grades') {
-                const g = {'A':0,'B':0,'C':0,'D':0}; 
-                data.forEach(d => g[d.loan_grade]++);
-                traces.push({ labels: Object.keys(g), values: Object.values(g), type: 'pie', hole: 0.4, marker: {colors:['#10b981','#3b82f6','#f59e0b','#ef4444']} });
-            }
-            else if (activeAggChart === 'scores') {
-                const months = Array.from(new Set(data.map(d => d.origination_month))).sort();
-                const bureauY = months.map(m => {
-                    const slice = data.filter(d => d.origination_month === m);
-                    return slice.reduce((sum, d) => sum + d.credit_bureau_score, 0) / (slice.length || 1);
-                });
-                const internalY = months.map(m => {
-                    const slice = data.filter(d => d.origination_month === m);
-                    return slice.reduce((sum, d) => sum + d.internal_score, 0) / (slice.length || 1);
-                });
-                traces.push({ x: months, y: bureauY, name: 'Bureau Score', mode: 'lines+markers', line: { color: '#3b82f6' } });
-                traces.push({ x: months, y: internalY, name: 'Internal Score', mode: 'lines+markers', line: { color: '#ef4444' }, yaxis: 'y2' });
-                layout.yaxis = { title: 'Bureau Score', gridcolor: 'rgba(255,255,255,0.05)' };
-                layout.yaxis2 = { title: 'Internal Score', overlaying: 'y', side: 'right', range: [0, 100] };
-            }
-            
-            safePlot('active-aggregate-chart', traces, layout);
-        }
-
-        // --- INIT ---
-        loadData().then(() => {
-            initGlobalStory();
-            // Setup Nav
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.onclick = () => {
-                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    activeAggChart = btn.dataset.chart;
-                    updateAggUI(parseInt(document.getElementById('aggSlider').value));
+                let traces = [];
+                let layout = {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 20, b: 40, l: 50, r: 20 }, font: { color: '#94a3b8', size: 10 },
+                    xaxis: { gridcolor: 'rgba(255,255,255,0.05)', zeroline: false, title: { font: { size: 10 } } },
+                    yaxis: { gridcolor: 'rgba(255,255,255,0.05)', zeroline: false, title: { font: { size: 10 } } },
+                    showlegend: true, legend: { font: { color: '#94a3b8', size: 10 }, bgcolor: 'rgba(0,0,0,0)' },
+                    hovermode: 'x unified'
                 };
-            });
-        });
+
+                if (activeAggChart === 'grade-vintage') {
+                    ['A','B','C','D'].forEach(g => {
+                        const gLoans = data.filter(d => d.loan_grade === g);
+                        if (gLoans.length === 0) return;
+                        const finalRate = (gLoans.filter(d => d.loan_status === 'Defaulted').length / gLoans.length) * 100;
+                        const x = Array.from({length: 25}, (_, i) => i);
+                        const y = x.map(mob => finalRate * (1 / (1 + Math.exp(-0.4 * (mob - 8)))));
+                        traces.push({ x: x, y: y, name: 'Grade ' + g, mode: 'lines', line: {width:4} });
+                    });
+                    layout.yaxis.title.text = 'Cum. Default Rate (%)';
+                    layout.xaxis.title.text = 'Months on Books (MOB)';
+                } else if (activeAggChart === 'regional') {
+                    const months = Array.from(new Set(data.map(d => d.origination_month))).sort();
+                    const categories = Array.from(new Set(data.map(d => d.location_city))).sort();
+                    const monthTotals = {};
+                    months.forEach(m => { monthTotals[m] = data.filter(d => d.origination_month === m).reduce((sum, d) => sum + d.loan_amount, 0); });
+                    categories.forEach(cat => {
+                        const y = months.map(m => {
+                            const total = monthTotals[m];
+                            if (total === 0) return 0;
+                            const val = data.filter(d => d.origination_month === m && d.location_city === cat).reduce((sum, d) => sum + d.loan_amount, 0);
+                            return (val / total) * 100;
+                        });
+                        traces.push({ x: months, y: y, name: cat, stackgroup: 'one', mode: 'lines', line: { width: 0 }, fill: 'tonexty' });
+                    });
+                    layout.yaxis.title.text = 'Principal Distribution (%)';
+                } else if (activeAggChart === 'sector') {
+                    const sectors = {};
+                    data.forEach(d => { if (!sectors[d.loan_use]) sectors[d.loan_use] = {d:0, t:0}; if (d.loan_status === 'Defaulted') sectors[d.loan_use].d++; sectors[d.loan_use].t++; });
+                    const x = Object.keys(sectors).sort();
+                    const y = x.map(s => (sectors[s].d / sectors[s].t) * 100);
+                    traces.push({ x: x, y: y, type: 'bar', marker: { color: '#3b82f6' }, text: y.map(v => v.toFixed(1) + '%'), textposition: 'auto', textfont: { color: 'white' } });
+                    layout.yaxis.title.text = 'Default Rate (%)';
+                    layout.showlegend = false;
+                } else if (activeAggChart === 'grades') {
+                    const grades = {'A':0, 'B':0, 'C':0, 'D':0};
+                    data.forEach(d => grades[d.loan_grade]++);
+                    traces.push({ labels: Object.keys(grades), values: Object.values(grades), type: 'pie', hole: 0.4, marker: {colors:['#10b981','#3b82f6','#f59e0b','#ef4444']}, textinfo: 'label+percent', textfont: { color: 'white' } });
+                } else if (activeAggChart === 'scores') {
+                    const months = Array.from(new Set(data.map(d => d.origination_month))).sort();
+                    const bureauY = months.map(m => { const slice = data.filter(d => d.origination_month === m); return slice.reduce((sum, d) => sum + d.credit_bureau_score, 0) / (slice.length || 1); });
+                    const internalY = months.map(m => { const slice = data.filter(d => d.origination_month === m); return slice.reduce((sum, d) => sum + d.internal_score, 0) / (slice.length || 1); });
+                    traces.push({ x: months, y: bureauY, name: 'Bureau Score', mode: 'lines+markers', line: { color: '#3b82f6' } });
+                    traces.push({ x: months, y: internalY, name: 'Internal Score', mode: 'lines+markers', line: { color: '#ef4444' }, yaxis: 'y2' });
+                    layout.yaxis.title.text = 'Bureau Score';
+                    layout.yaxis2 = { title: { text: 'Internal Score', font: { color: '#ef4444', size: 10 } }, overlaying: 'y', side: 'right', range: [0, 100], gridcolor: 'rgba(255,255,255,0.02)', tickfont: { color: '#ef4444' } };
+                }
+                safePlot(containerId, traces, layout);
+            }
+
+            let syncState = { fullHistory: [], abstractPaths: [] };
+            function initSyncData() {
+                syncState.fullHistory = [{ mob: 0, closing_principal: 25000, total_due_exposure: 25000, status: 'Healthy', cash_received: 0, write_off: 0, due_date: '2023-01-15', actual_date: '-', accumulated_arrears: 0 }, ...forensicHistory];
+                for(let i=0; i<3; i++) {
+                    const startVal = 18000 + Math.random() * 8000;
+                    const path = [{ y: startVal, status: 'Healthy' }];
+                    let cur = startVal;
+                    const installment = (startVal / 16) + 300;
+                    for(let m=1; m<=16; m++) {
+                        const rand = Math.random();
+                        let status = 'Healthy'; let payment = installment;
+                        if (rand < 0.12) { status = 'Missed Payment'; payment = 0; }
+                        else if (rand < 0.28) { status = 'Partial Payment'; payment = installment * 0.45; }
+                        const interest = cur * 0.012; cur = cur - (payment - interest); if (cur < 0) cur = 0;
+                        path.push({ y: cur, status: status });
+                    }
+                    syncState.abstractPaths.push(path);
+                }
+                const topLine = []; let topCur = 30000; topLine.push({ y: topCur, status: 'Healthy' });
+                for(let m=1; m<=16; m++) { topCur -= 400; topLine.push({ y: topCur, status: 'Healthy' }); }
+                syncState.abstractPaths.push(topLine);
+            }
+
+            const getStatusColor = (s, m) => {
+                if (s === 'Missed Payment' || s === 'Delinquent' || s === 'Partial Write-off') return '#ef4444';
+                if (s === 'Partial Payment' || m === 10 || m === 11) return '#f59e0b';
+                return '#3b82f6';
+            };
+            const getMarkerColor = (d) => {
+                if (d.status === 'Partial Write-off') return '#ffffff';
+                if (d.status === 'Catch-up Payment') return '#10b981';
+                if (d.status === 'Partial Payment') return '#f59e0b';
+                if (d.status === 'Missed Payment' || d.status === 'Delinquent') return '#ef4444';
+                return '#3b82f6';
+            };
+            const getMarkerLabel = (d) => {
+                if (d.status === 'Partial Payment') return 'partial payment';
+                if (d.status === 'Missed Payment' || d.status === 'Delinquent') return 'missing payment';
+                if (d.status === 'Partial Write-off') return 'writeoff';
+                if (d.status === 'Catch-up Payment') return 'catch-up payments';
+                return '';
+            };
+
+            function updateSyncUI(progress) {
+                const totalSteps = 16 + 17;
+                const index = Math.floor(progress * (totalSteps - 1));
+                const tableBody = document.getElementById('sync-table-body');
+                const chartContainer = document.getElementById('sync-chart-container');
+                if (!tableBody || !chartContainer) return;
+
+                const line1EndIdx = syncState.fullHistory.length - 1;
+                const isAbstractPhase = index > line1EndIdx;
+                const p1 = document.getElementById('sync-pill-1');
+                const p2 = document.getElementById('sync-pill-2');
+                if (p1 && p2) {
+                    p1.style.opacity = isAbstractPhase ? 0 : 1;
+                    p2.style.opacity = isAbstractPhase ? 1 : 0;
+                }
+                
+                const line1VisibleIdx = Math.min(index, line1EndIdx);
+                const abstractVisibleMonths = index > line1EndIdx ? Math.min(index - line1EndIdx, 16) : 0;
+                const traces = []; const annotations = [];
+                const visibleRowsLine1 = syncState.fullHistory.slice(0, line1VisibleIdx + 1);
+
+                traces.push({ x: [null], y: [null], name: 'Total Due (incl. interest)', type: 'scatter', mode: 'lines', line: { color: '#94a3b8', width: 2, dash: 'dot' }, showlegend: true });
+                traces.push({ x: [null], y: [null], name: 'Partial Payment', type: 'scatter', mode: 'lines', line: { color: '#f59e0b', width: 6 }, showlegend: true });
+                traces.push({ x: [null], y: [null], name: 'Missing Payment', type: 'scatter', mode: 'lines', line: { color: '#ef4444', width: 6 }, showlegend: true });
+
+                traces.push({ x: visibleRowsLine1.map(d => d.mob), y: visibleRowsLine1.map(d => d.total_due_exposure), name: 'Total Due', type: 'scatter', mode: 'lines', line: { color: '#94a3b8', width: 2, dash: 'dot' }, showlegend: false, hoverinfo: 'skip' });
+                traces.push({ x: visibleRowsLine1.map(d => d.mob), y: idealAmortization.slice(0, line1VisibleIdx + 1), name: 'Ideal', type: 'scatter', mode: 'lines', line: { color: 'rgba(59, 130, 246, 0.2)', width: 2 }, showlegend: false, hoverinfo: 'skip' });
+
+                for (let i = 1; i <= line1VisibleIdx; i++) {
+                    const s = syncState.fullHistory[i-1]; const next = syncState.fullHistory[i];
+                    traces.push({ x: [s.mob, next.mob], y: [s.closing_principal, next.closing_principal], type: 'scatter', mode: 'lines', line: { color: getStatusColor(s.status, s.mob), width: 6 }, showlegend: false, hoverinfo: 'none' });
+                }
+                traces.push({ x: visibleRowsLine1.map(d => d.mob), y: visibleRowsLine1.map(d => d.closing_principal), name: 'Actual', type: 'scatter', mode: 'markers', marker: { size: 14, color: visibleRowsLine1.map(d => getMarkerColor(d)), line: { color: 'white', width: 3 } }, showlegend: false, customdata: visibleRowsLine1.map(d => [d.cash_received, d.write_off, d.due_date, (d.accumulated_arrears > 0.01 ? d.accumulated_arrears.toFixed(2) : 0), d.status]), hovertemplate: "<b>Status: %{customdata[4]}</b><br>Balance: $%{y:,.0f}<br>Paid: $%{customdata[0]}<br><extra></extra>" });
+
+                visibleRowsLine1.forEach(d => {
+                    const label = getMarkerLabel(d);
+                    if (!label) return;
+                    let show = false; let below = false;
+                    if (d.mob === 4) show = true; if (d.mob === 8) { show = true; below = true; } if (d.mob === 10) show = true; if (d.mob === 12) { show = true; below = true; }
+                    if (show) {
+                        const color = getMarkerColor(d);
+                        annotations.push({ x: d.mob, y: d.closing_principal, text: `<b>${label.toUpperCase()}</b>`, showarrow: true, arrowhead: 0, arrowsize: 1, arrowwidth: 2, arrowcolor: color, ax: 0, ay: (below ? 45 : -45), font: { color: d.status === 'Partial Write-off' ? '#0f172a' : 'white', size: 9 }, bgcolor: color, bordercolor: 'white', borderwidth: 2, borderpad: 6, opacity: 1 });
+                    }
+                });
+
+                const batchBalances = [{ id: 'L-FORENSIC-001', val: syncState.fullHistory[line1VisibleIdx].closing_principal }];
+                for(let i = 0; i < syncState.abstractPaths.length; i++) {
+                    const pathData = syncState.abstractPaths[i]; const loanId = `L-BATCH-00${i+2}`;
+                    if (abstractVisibleMonths > 0) {
+                        for (let m = 1; m <= abstractVisibleMonths; m++) {
+                            const s = pathData[m-1]; const next = pathData[m];
+                            traces.push({ x: [m-1, m], y: [s.y, next.y], type: 'scatter', mode: 'lines', line: { color: getStatusColor(s.status, m-1), width: 3, opacity: 0.8 }, showlegend: false, hoverinfo: 'none' });
+                        }
+                        const currentVal = pathData[abstractVisibleMonths].y; batchBalances.push({ id: loanId, val: currentVal });
+                        traces.push({ x: [abstractVisibleMonths], y: [currentVal], mode: 'text', text: [loanId], textposition: 'middle right', textfont: { size: 10, color: '#60a5fa', weight: 700 }, showlegend: false });
+                    } else { batchBalances.push({ id: loanId, val: pathData[0].y }); }
+                }
+                tableBody.innerHTML = batchBalances.map(b => `<tr><td>${b.id}</td><td style="font-weight:700; color:#60a5fa">$${b.val.toLocaleString()}</td></tr>`).join('');
+                const layout = { paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)', margin: { t: 60, b: 60, l: 60, r: 150 }, hovermode: 'closest', xaxis: { title: 'MOB', range: [-0.5, 17.5], gridcolor: 'rgba(255,255,255,0.05)', tickfont: { color: '#64748b', size: 10 }, dtick: 1 }, yaxis: { title: 'Principal', range: [0, 32000], gridcolor: 'rgba(255,255,255,0.05)', tickfont: { color: '#64748b', size: 10 } }, showlegend: true, legend: { font: { color: '#94a3b8', size: 10 }, bgcolor: 'rgba(15, 23, 42, 0.8)', bordercolor: 'rgba(255,255,255,0.1)', borderwidth: 1, x: 1.05, y: 1 }, annotations: annotations };
+                safePlot('sync-chart-container', traces, layout);
+            }
+
+            function updateAthenaUI(progress) {
+                const els = { root: document.getElementById('node-root'), rootText: document.getElementById('text-root'), mainPath: document.getElementById('path-main'), crossbar: document.getElementById('path-crossbar'), duck: document.getElementById('duck-annotation'), athena: document.getElementById('athena-annotation'), drops: [1,2,3,4,5].map(i => document.getElementById(`path-drop-${i}`)), leaves: [1,2,3,4,5].map(i => document.getElementById(`leaf-${i}`)) };
+                const setVis = (el, vis) => el && (vis ? el.classList.add('visible') : el.classList.remove('visible'));
+                const setGroupVis = (group, vis) => group && group.querySelectorAll('.label-grey, .arrow-line').forEach(el => setVis(el, vis));
+                setGroupVis(els.duck, progress > 0.02); setVis(els.root, progress > 0.05); setVis(els.rootText, progress > 0.05); setVis(els.mainPath, progress > 0.2); setGroupVis(els.athena, progress > 0.2); setVis(els.crossbar, progress > 0.4);
+                els.drops.forEach((d, i) => setVis(d, progress > 0.6 + (i * 0.04)));
+                els.leaves.forEach((l, i) => { setVis(l.querySelector('rect'), progress > 0.8 + (i * 0.04)); setVis(l.querySelector('text'), progress > 0.8 + (i * 0.04)); });
+                if (progress > 0.95) { els.root.classList.add('pulsate-node'); els.leaves.forEach(l => l.querySelector('rect').classList.add('pulsate-node')); }
+                else { els.root.classList.remove('pulsate-node'); els.leaves.forEach(l => l.querySelector('rect').classList.remove('pulsate-node')); }
+            }
+
+            function updateAggregateUI(progress) {
+                const slider = document.getElementById('aggSlider');
+                const dateDisplay = document.getElementById('aggDateDisplay');
+                if (!slider || !dateDisplay) return;
+                const ts = aggMeta.access_min_ts + progress * (aggMeta.access_max_ts - aggMeta.access_min_ts);
+                slider.value = ts;
+                dateDisplay.innerText = new Date(ts).toISOString().split('T')[0];
+                const filtered = aggPayload.filter(d => d.ts <= ts);
+                updateStats(filtered);
+                renderAggregateCharts(filtered);
+            }
+
+            function initUnifiedScroll() {
+                const container = document.querySelector('.story-container');
+                const stages = [1,2,3,4,5].map(i => document.getElementById(`stage-${i}`));
+                initSyncData();
+                window.addEventListener('scroll', () => {
+                    const rect = container.getBoundingClientRect();
+                    const scrollHeight = container.scrollHeight - window.innerHeight;
+                    const globalProgress = Math.min(Math.max(-rect.top / scrollHeight, 0), 1);
+                    const stageWidth = 1 / 5;
+                    stages.forEach((s, i) => {
+                        const start = i * stageWidth; const end = (i + 1) * stageWidth;
+                        const isActive = globalProgress >= start && globalProgress < end;
+                        s.classList.toggle('active', isActive);
+                        const internal = Math.min(Math.max((globalProgress - start) / stageWidth, 0), 1);
+                        if (i === 2) updateSyncUI(internal);
+                        if (i === 3) updateAthenaUI(internal);
+                        if (i === 4) updateAggregateUI(internal);
+                    });
+                });
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active'); activeAggChart = btn.dataset.chart;
+                        const scrollHeight = container.scrollHeight - window.innerHeight;
+                        const progress = Math.min(Math.max((window.scrollY - container.offsetTop) / scrollHeight, 0), 1);
+                        const internal = Math.min(Math.max((progress - 0.8) * 5, 0), 1);
+                        updateAggregateUI(internal);
+                    });
+                });
+            }
+            loadData().then(initUnifiedScroll);
+        } catch (e) { console.error("Dashboard Init Error", e); }
     </script>
 </body>
 </html>
