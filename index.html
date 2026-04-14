@@ -203,11 +203,34 @@
                 gap: 2rem !important;
             }
 
-            .sync-table-wrapper { height: auto !important; max-height: 400px; overflow-x: auto; }
-            .sync-chart-wrapper { height: 400px !important; }
+            /* Section 3: Loan State Engine Mobile Only */
+            #sync-table-container { display: none !important; }
+            #sync-lhs { flex: none !important; height: auto !important; }
+            #sync-lhs > div[style*="position: relative"] { position: relative !important; height: auto !important; flex: none !important; }
+            #sync-pill-1, #sync-pill-2 { 
+                position: relative !important; opacity: 1 !important; pointer-events: auto !important;
+                background: none !important; border: none !important; padding: 0 !important;
+                margin-bottom: 1.5rem;
+            }
+            #sync-pill-2 { display: none !important; } /* Only show first set of text on mobile for simplicity */
+            .sync-chart-wrapper { height: 350px !important; order: 2; }
+            #sync-lhs { order: 1; }
+
+            /* Section 4: Serverless Analytics Layer Mobile Only */
+            .athena-pill-container { flex-direction: column; background: none !important; border: none !important; padding: 0 !important; }
+            .athena-pill-container .athena-pill { background: none !important; border: none !important; padding: 0 !important; margin-bottom: 1rem; }
             
-            .athena-pill-container { flex-direction: column; }
-            .athena-pill { padding: 1.5rem !important; }
+            /* Section 5: Portfolio Evolution Mobile Only */
+            #stage-5 > div[style*="display: flex; flex-direction: column"] {
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            #aggSlider { order: 10; margin-top: 2rem !important; margin-bottom: 0 !important; }
+            #stage-5 nav.top-nav { order: 1; }
+            #stage-5 div[style*="display: grid"] { order: 2; }
+            #stage-5 div[style*="background: rgba(255,255,255,0.03)"] { order: 11; margin-top: 1rem; } /* wrapper for slider label */
+
+            .sync-table-wrapper { height: auto !important; max-height: 400px; overflow-x: auto; }
             
             .tree-svg { 
                 width: 100% !important; 
@@ -520,8 +543,13 @@
                 try {
                     const el = document.getElementById(id);
                     if (!el) return;
-                    if (!el.data) Plotly.newPlot(id, traces, layout, {displayModeBar: false, responsive: true});
-                    else Plotly.react(id, traces, layout, {displayModeBar: false, responsive: true});
+                    const config = { 
+                        displayModeBar: false, 
+                        responsive: true,
+                        staticPlot: isMobile // Make it load solidly like a picture on mobile
+                    };
+                    if (!el.data) Plotly.newPlot(id, traces, layout, config);
+                    else Plotly.react(id, traces, layout, config);
                 } catch (e) { console.error("Plotly error on " + id, e); }
             };
 
