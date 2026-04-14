@@ -12,7 +12,7 @@ This document provides an exhaustive technical and narrative breakdown of the Da
   - `Text`: `#f8fafc` (Off-white)
   - `Accent`: `#10b981` (Emerald Green)
   - `Alert/Warning`: `#ef4444` (Red) / `#f59e0b` (Amber)
-- **Global Layout:** All content is wrapped in a `story-container` with a `scroll-track` of `600vh` to drive scroll-linked animations.
+- **Global Layout:** All five narrative stages are hosted within a single `story-container` with a unified `sticky-wrapper`. This ensures that transitions between stages are exclusively **fades**, rather than physical vertical scrolls.
 
 ---
 
@@ -21,7 +21,7 @@ This document provides an exhaustive technical and narrative breakdown of the Da
 - Full-viewport (`100vh`) radial gradient background (`#1e293b` to `#0f172a`).
 - Centralized typography: `h1` at `4rem` with `-2px` letter spacing.
 - **Interaction:** "Enter" button (`enter-btn`) with `0.3s` transform transition and blue box-shadow.
-- **Transition Logic:** Clicking "Enter" triggers a smooth programmatic scroll to `10%` of the `story-container`'s scroll height, centering Stage 1.
+- **Transition Logic:** Clicking "Enter" triggers a smooth programmatic scroll to the start of the story sequence.
 
 **Precise Text Content:**
 - **Title:** `Lending Analytics Platform`
@@ -34,7 +34,7 @@ This document provides an exhaustive technical and narrative breakdown of the Da
 **Title:** `1. Data Ingestion Layer`
 **UI Composition:**
 - **Description Pill (LHS):** Styled with `background: rgba(59, 130, 246, 0.05)` and a `1px` border of the primary blue.
-- **Data Preview (RHS):** Two stacked `mini-table` components within a `1.5rem` gap flex column.
+- **Data Preview (RHS):** Two stacked `mini-table` components simulating raw incoming data.
 
 **Precise Pill Text (LHS):**
 - Lender **A1B** submits structured daily loan events (payments, balances, write-offs) via a validated API
@@ -42,49 +42,47 @@ This document provides an exhaustive technical and narrative breakdown of the Da
 
 **Precise Table Headers/Data (RHS):**
 - **Table 1 Header:** `Daily Loans (2026-04-12)`
-- **Table 1 Columns:** `Loan ID`, `Amount`, `City`
 - **Table 2 Header:** `Daily Payments (2026-04-12)`
-- **Table 2 Columns:** `Pay ID`, `Amount`, `Date Paid`
 
 ---
 
 ## 2. The Multi-Tenant Data Lake
 **Title:** `2. The Multi-Tenant Data Lake`
 **UI Composition:**
-- **Description Pill (LHS):** Emerald-themed (`rgba(16, 185, 129, 0.05)`) focusing on logical grouping and Parquet storage in S3.
-- **Central Lake Table (RHS):** A wider implementation of the `lake-table`. 
+- **Description Pill (LHS):** Emerald-themed focusing on logical grouping and Parquet storage in S3.
+- **Central Lake Table (RHS):** Interleaved data from multiple lenders (`Lender_A1B`, `LENDER_BETA`, etc.).
 
 **Precise Pill Text (LHS):**
 - Data is logically grouped by lender, but physically stored as distributed Parquet files in S3.
 - This enables partition pruning, so only relevant data partitions are read for a given lender or time range.
 
-**Precise Table Headers (RHS):**
-- **Columns:** `Lender & Date`, `Entity ID`, `Category`, `Amount`, `Location`
-
 ---
 
 ## 3. Loan State Engine
 **Title:** `3. Loan State Engine`
-**Layout:** A complex `250vh` scroll-track (`sync-scroll-track`) with a `sticky` container.
+**Layout:** Dual-pill transition driven by scroll progress. 
+- **LHS:** Narrative pills and live-updating balance table.
+- **RHS:** Interactive line chart with historical forensic reconstruction.
 
-**Precise Pill 1 Text (Initial Phase - LHS):**
+**Precise Pill 1 Text (Initial Phase):**
 - Outstanding balances evolve based upon interest accrual, writeoffs, late fees, etc.
 - Calculating monthly change in balance requires complex recursive computations based on previous months.
 - We leverage DuckDB's fast in-memory and iterative execution to provide speedy and reliable calculations
 
-**Precise Pill 2 Text (Batch/Matrix Phase - LHS):**
+**Precise Pill 2 Text (Batch/Matrix Phase):**
 - Each computed loan-state is materialised into a **"loan-state table"**, representing a full snapshot of portfolio performance at a given point in time.
 - This enables real-time analysis of delinquency behaviour, including late payments, DPD trajectories, and risk assessments
 
-**Precise Chart Labels & Interaction (RHS):**
-- **Annotation Labels:** `PARTIAL PAYMENT`, `MISSING PAYMENT`, `WRITEOFF`, `CATCH-UP PAYMENTS`
-- **Hover Template:** `Status: [Status]`, `Balance: $[Value]`, `Paid: $[Value]`
+**Precise Chart Legend (RHS):**
+- **Dotted Line:** Total Due (incl. interest)
+- **Orange Line:** Partial Payment
+- **Red Line:** Missing Payment
 
 ---
 
 ## 4. Serverless Analytics Layer
 **Title:** `4. Serverless Analytics Layer`
-**Layout:** `350vh` scroll-track featuring a complex SVG directed graph.
+**Layout:** Animated SVG directed graph showing data distribution.
 
 **Precise Pill Text (Top):**
 - Athena is used as a serverless SQL layer over the precomputed loan-state table in S3, enabling scalable cohort and risk analytics without managing a database cluster.
@@ -92,29 +90,18 @@ This document provides an exhaustive technical and narrative breakdown of the Da
 
 **Precise SVG Node Content:**
 - **Root Node:** `Loan State Table (S3)`
-- **Leaf Node 1:** `Grade Vintage Curves`
-- **Leaf Node 2:** `Regional Principal Mix`
-- **Leaf Node 3:** `Sector Default Rates`
-- **Leaf Node 4:** `Credit Grade Distribution`
-- **Leaf Node 5:** `Score Evolution`
-- **Annotations:** `DuckDB (local engine)`, `Distributed Athena Queries (serverless SQL)`
+- **Leaf Nodes:** `Grade Vintage Curves`, `Regional Principal Mix`, `Sector Default Rates`, `Credit Grade Distribution`, `Score Evolution`.
 
 ---
 
 ## 5. Portfolio Evolution
 **Title:** `5. Portfolio Evolution`
-**Layout:** A comprehensive analytics cockpit.
+**Layout:** Analytics cockpit with time-scrubbing slider and metric navigation.
 
 **Precise Institutional Notes (LHS):**
 - We output real time dashboards that visualise Athena-aggregated cohort and risk metrics.
-- Supports portfolio monitoring, including delinquency tracking, cohort performance, and risk segmentation.
-- Used by 10+ commercial banking clients supporting portfolios of up to 100k+ loans.
-
-**Precise Stats Grid Labels (LHS):**
-- `Loans`, `Volume`, `Avg Rate`
-
-**Precise Metric Navigation Labels:**
-- `📊 Grade Vintage Curves`, `🌍 Regional Principal Mix`, `💼 Sector Default Rates`, `🛡️ Credit Grade Distribution`, `📈 Score Evolution`
+- Supports portfolio monitoring, including delinquency tracking and cohort performance.
+- Used by 10+ commercial banking clients supporting 100k+ loans.
 
 **Precise Metric Definitions (Description Box - RHS):**
 - **Grade Vintage Curves:** Analyzes cumulative default trajectories normalized by Months on Books (MOB).
@@ -125,10 +112,9 @@ This document provides an exhaustive technical and narrative breakdown of the Da
 
 ---
 
-## Scroll & Transition Engine
-- **Progression Logic:** The `initStoryScroll` function maps the global `0.0` to `1.0` scroll progress to specific `activeIdx` values. 
-  - `0.05 to 0.5`: Stage 1
-  - `0.5 to 1.0`: Stage 2
-- **Stage Visibility:** Stages are `position: absolute` within the `sticky-wrapper`. Only the `active` stage has `opacity: 1` and `pointer-events: auto`.
-- **Easing:** All opacity transitions use a standardized `0.8s ease-in-out` to ensure a cinematic feel during manual scrolling.
-- **Scroll Synchronization (Stage 3):** The `initSyncAnimation` maps `300vh` scroll height to a `33-step` animation sequence (16 forensic months + 17 batch matrix steps).
+## Scroll & Transition Engine (Fade-Only)
+- **The Global Track:** The entire dashboard lives in a `story-container` with a `scroll-track` of approx `1500vh`.
+- **Sticky Execution:** A `sticky-wrapper` ensures that all content stays centered in the viewport while scrolling.
+- **Opacity Toggle:** As the user scrolls through predefined ranges of the global progress (e.g., `0.0-0.2`, `0.2-0.4`), the corresponding stage's `active` class is toggled.
+- **Transitions:** All stage transitions use `transition: opacity 0.8s ease-in-out`, creating a seamless cross-fade effect.
+- **Intra-Stage Progress:** For stages with internal animations (Stage 3, 4, 5), the local scroll progress is recalculated based on the specific global range for that stage.
