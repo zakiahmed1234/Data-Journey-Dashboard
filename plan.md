@@ -4,8 +4,8 @@ This document provides a literal extraction of the narrative, titles, and techni
 
 ---
 
-## Stage 1: Edge Ingestion
-**Title:** `1. Edge Ingestion`
+## Stage 1: Data Ingestion Layer
+**Title:** `1. Data Ingestion Layer`
 **Layout:** 2-column grid. Left-hand side (LHS) features a styled description pill. Right-hand side (RHS) displays stacked mini-tables simulating raw incoming data.
 
 **Exact Pill Text:**
@@ -18,8 +18,8 @@ This document provides a literal extraction of the narrative, titles, and techni
 
 ---
 
-## Stage 2: The Multi-Tenant Lake
-**Title:** `2. The Multi-Tenant Lake`
+## Stage 2: The Multi-Tenant Data Lake
+**Title:** `2. The Multi-Tenant Data Lake`
 **Layout:** 2-column grid. LHS contains a green-themed description pill. RHS features a wide "Lake Table" showing how data from multiple lenders is interleaved.
 
 **Exact Pill Text:**
@@ -31,8 +31,8 @@ This document provides a literal extraction of the narrative, titles, and techni
 
 ---
 
-## Stage 4: Forensic Reconstruction
-**Title:** `4. Forensic Reconstruction`
+## Stage 3: Loan State Engine
+**Title:** `3. Loan State Engine`
 **Subtitle:** `Data pulled from Hive partitions generates the final Audit Trail in real-time.`
 **Layout:** Scroll-synchronized dual-pill transition. LHS contains transitioning pills and a live-updating balance table. RHS contains a Plotly line chart.
 
@@ -51,8 +51,8 @@ This document provides a literal extraction of the narrative, titles, and techni
 
 ---
 
-## Stage 5: Serverless Analytics Layer
-**Title:** `5. Serverless Analytics Layer`
+## Stage 4: Serverless Analytics Layer
+**Title:** `4. Serverless Analytics Layer`
 **Subtitle:** `Athena enables scalable aggregation without database cluster management.`
 **Layout:** A large interactive SVG Tree Map showing data flow from a root node to distributed analytics outputs.
 
@@ -66,8 +66,8 @@ This document provides a literal extraction of the narrative, titles, and techni
 
 ---
 
-## Stage 6: Portfolio Evolution
-**Title:** `6. Portfolio Evolution`
+## Stage 5: Portfolio Evolution
+**Title:** `5. Portfolio Evolution`
 **Subtitle:** `Historical Portfolio Cutoff` (with Date Display)
 **Layout:** Full-screen analytics cockpit with a time-scrubbing slider and navigation for different charts.
 
@@ -76,12 +76,12 @@ This document provides a literal extraction of the narrative, titles, and techni
 - Supports portfolio monitoring, including delinquency tracking, cohort performance, and risk segmentation.
 - Used by 10+ commercial banking clients supporting portfolios of up to 100k+ loans.
 
-**Metric Navigation & Descriptions:**
-- **📊 Grade Vintage Curves:** Analyzes cumulative default trajectories normalized by Months on Books (MOB). This visualization benchmarks risk performance across credit tiers, demonstrating the sharp predictive divergence between prime (Grade A) and sub-prime (Grade D) cohorts.
-- **🌍 Regional Principal Mix:** Visualizes geographic principal distribution using a 100% stacked area model. This highlights relative shifts in regional concentration and capital allocation trends across the global portfolio over time.
-- **💼 Sector Default Rates:** Benchmarks sector-specific risk by calculating the default rate per loan use category. This identifies volatility clusters and industry-specific performance markers within the current active portfolio.
-- **🛡️ Credit Grade Distribution:** Displays the static credit quality mix of the portfolio. This proportional breakdown provides an institutional-view of capital distribution across the risk spectrum up to the selected cutoff date.
-- **📈 Score Evolution:** Tracks the historical correlation between external Credit Bureau indicators and proprietary Internal risk scores. This dual-axis time-series is critical for validating internal model efficacy against standardized market benchmarks.
+**Exact Metric Navigation Labels:**
+- 📊 Grade Vintage Curves
+- 🌍 Regional Principal Mix
+- 💼 Sector Default Rates
+- 🛡️ Credit Grade Distribution
+- 📈 Score Evolution
 
 **Visual Components:**
 - **Time Slider:** Allows user to scrub through history (accessing min/max timestamps from `agg_meta.json`).
