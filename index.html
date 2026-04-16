@@ -874,7 +874,9 @@
                         const rect = container.getBoundingClientRect();
                         const scrollHeight = container.scrollHeight - window.innerHeight;
                         const globalProgress = Math.min(Math.max(-rect.top / scrollHeight, 0), 1);
-                        const stageWidth = 1 / 5;
+                        
+                        // Custom thresholds to make Stage 1 & 2 "closish to instant" (doubled)
+                        const thresholds = [0, 0.04, 0.08, 0.39, 0.70, 1.0];
 
                         // Show/Hide progress nav based on container visibility
                         if (rect.top <= 0 && rect.bottom >= window.innerHeight) {
@@ -886,13 +888,14 @@
                         }
 
                         stages.forEach((s, i) => {
-                            const start = i * stageWidth; const end = (i + 1) * stageWidth;
+                            const start = thresholds[i]; 
+                            const end = thresholds[i+1];
                             const isActive = globalProgress >= start && globalProgress < end;
                             
                             s.classList.toggle('active', isActive);
                             if (navItems[i]) navItems[i].classList.toggle('active', isActive);
 
-                            const internal = Math.min(Math.max((globalProgress - start) / stageWidth, 0), 1);
+                            const internal = Math.min(Math.max((globalProgress - start) / (end - start), 0), 1);
                             if (i === 2) updateSyncUI(internal);
                             if (i === 3) updateAthenaUI(internal);
                             if (i === 4) updateAggregateUI(internal);
