@@ -73,31 +73,6 @@
         .hero-socials a:hover { color: var(--primary); }
         .hero-socials svg { width: 24px; height: 24px; fill: currentColor; }
 
-        /* Progress Navigator */
-        .progress-nav {
-            position: fixed; right: 2rem; top: 50%; transform: translateY(-50%);
-            display: flex; flex-direction: column; gap: 1.5rem; z-index: 100;
-            padding: 1rem; pointer-events: none;
-        }
-        .nav-item {
-            display: flex; align-items: center; justify-content: flex-end; gap: 1rem;
-            transition: all 0.5s ease;
-        }
-        .nav-label {
-            color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;
-            font-weight: 700; text-align: right; 
-            transition: all 0.5s ease; white-space: nowrap;
-        }
-        .nav-item.active .nav-label { color: white; transform: scale(1.1); }
-        .nav-dot {
-            width: 6px; height: 6px; background: #334155; border-radius: 50%;
-            transition: all 0.5s ease;
-        }
-        .nav-item.active .nav-dot {
-            background: var(--primary); transform: scale(1.8);
-            box-shadow: 0 0 10px var(--primary);
-        }
-
         .lake-table {
             width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.02); 
             border-radius: 1.5rem; overflow: hidden; font-size: 0.85rem;
@@ -311,13 +286,6 @@
         <button class="enter-btn" id="enter-btn">Enter</button>
     </section>
 
-    <div class="progress-nav" id="progress-nav">
-        <div class="nav-item" data-stage="1"><span class="nav-label">Data Ingestion</span><div class="nav-dot"></div></div>
-        <div class="nav-item" data-stage="2"><span class="nav-label">Data Lake</span><div class="nav-dot"></div></div>
-        <div class="nav-item" data-stage="3"><span class="nav-label">Loan Engine</span><div class="nav-dot"></div></div>
-        <div class="nav-item" data-stage="4"><span class="nav-label">Analytics Layer</span><div class="nav-dot"></div></div>
-        <div class="nav-item" data-stage="5"><span class="nav-label">Portfolio Evolution</span><div class="nav-dot"></div></div>
-    </div>
 
     <div class="story-container">
         <div class="scroll-track">
@@ -848,8 +816,6 @@
             function initUnifiedScroll() {
                 const container = document.querySelector('.story-container');
                 const stages = [1,2,3,4,5].map(i => document.getElementById(`stage-${i}`));
-                const navItems = document.querySelectorAll('.nav-item');
-                const progressNav = document.getElementById('progress-nav');
                 const slider = document.getElementById('aggSlider');
                 
                 initSyncData();
@@ -878,22 +844,12 @@
                         // Custom thresholds to make Stage 1 & 2 "closish to instant" (doubled)
                         const thresholds = [0, 0.04, 0.08, 0.39, 0.70, 1.0];
 
-                        // Show/Hide progress nav based on container visibility
-                        if (rect.top <= 0 && rect.bottom >= window.innerHeight) {
-                            progressNav.style.opacity = '1';
-                            progressNav.style.pointerEvents = 'auto';
-                        } else {
-                            progressNav.style.opacity = '0';
-                            progressNav.style.pointerEvents = 'none';
-                        }
-
                         stages.forEach((s, i) => {
                             const start = thresholds[i]; 
                             const end = thresholds[i+1];
                             const isActive = globalProgress >= start && globalProgress < end;
                             
                             s.classList.toggle('active', isActive);
-                            if (navItems[i]) navItems[i].classList.toggle('active', isActive);
 
                             const internal = Math.min(Math.max((globalProgress - start) / (end - start), 0), 1);
                             if (i === 2) updateSyncUI(internal);
